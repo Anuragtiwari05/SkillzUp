@@ -1,4 +1,4 @@
-
+// search page for searching the content 
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
