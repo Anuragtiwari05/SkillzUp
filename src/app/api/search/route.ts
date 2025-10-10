@@ -1,4 +1,4 @@
-// search page for searching the content 
+// app/api/search/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -12,24 +12,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'http://127.0.0.1:2005/webhook/skillzup-search';
-    
+    const n8nWebhookUrl =
+      process.env.N8N_WEBHOOK_URL || 'http://127.0.0.1:2005/webhook/skillzup-search';
+
     console.log('Calling n8n webhook:', n8nWebhookUrl);
     console.log('Request body:', JSON.stringify({ topic: topic.trim() }));
-    
+
     const response = await fetch(n8nWebhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topic: topic.trim() }),
     });
 
     console.log('n8n response status:', response.status);
-    
     const responseText = await response.text();
     console.log('n8n raw response:', responseText);
-    
+
     let data;
     try {
       data = JSON.parse(responseText);
@@ -51,10 +49,10 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Search API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Failed to fetch learning resources',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
