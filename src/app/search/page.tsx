@@ -3,38 +3,9 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BookOpen, Video, FileText, Newspaper, Loader2, ArrowLeft, ExternalLink, Clock, User, Play, TrendingUp } from 'lucide-react';
+import { ApiResponse, ResourceItem } from '@/models/apiTypes';
 
-interface ResourceItem {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  link: string;
-  thumbnail?: string;
-  author?: string;
-  source?: string;
-  publishedAt?: string;
-}
 
-interface ApiResponse {
-  success: boolean;
-  topic: string;
-  overview: {
-    content: string;
-    generatedBy: string;
-  };
-  resources: {
-    videos: ResourceItem[];
-    articles: ResourceItem[];
-    news: ResourceItem[];
-  };
-  stats: {
-    totalVideos: number;
-    totalArticles: number;
-    totalNews: number;
-    totalResources: number;
-  };
-}
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
