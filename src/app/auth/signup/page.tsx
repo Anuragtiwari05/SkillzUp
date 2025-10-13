@@ -17,14 +17,14 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('/api/signup', {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, username, password })
       });
       const data = await res.json();
       if (data.success) {
-        router.push('/login');
+        router.push('/');
       } else {
         alert(data.message);
       }

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import dbConnect from '@/utils/db';
 import User from '@/models/User';
+
+const jwtSecret = process.env.JWT_SECRET as string; // Make sure this is set in .env
 
 export async function POST(req: Request) {
   try {
@@ -75,7 +78,15 @@ export async function POST(req: Request) {
       password: hashedPassword
     });
 
-    return NextResponse.json(
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: newUser._id.toString(), username: newUser.username, email: newUser.email },
+      jwtSecret,
+      { expiresIn: '7d' }
+    );
+
+    // Send response with token in httpOnly cookie
+    const response = NextResponse.json(
       {
         success: true,
         message: 'User registered successfully',
@@ -88,6 +99,15 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
+
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 // 7 days
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Signup error:', error);

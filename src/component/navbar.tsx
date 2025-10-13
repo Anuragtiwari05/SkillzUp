@@ -1,23 +1,36 @@
-// src/components/Navbar.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { BookOpen, Search } from "lucide-react";
 
 export default function Navbar() {
   const [query, setQuery] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if JWT token exists
+    setIsLoggedIn(document.cookie.includes("token"));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     console.log("Searching for:", query);
-    // Add your search logic or router navigation here
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearch(e as any);
     }
+  };
+
+  const handleLogout = () => {
+    // Clear JWT cookie
+    document.cookie = "token=; path=/; max-age=0";
+    setIsLoggedIn(false);
+    // Redirect to signup page after logout
+    window.location.href = "/signup";
   };
 
   return (
@@ -29,9 +42,7 @@ export default function Navbar() {
             <div className="bg-blue-600 p-2 rounded-lg transform transition-all duration-300 hover:scale-110 hover:rotate-6">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-black">
-              SkillzUp
-            </span>
+            <span className="text-2xl font-bold text-black">SkillzUp</span>
           </div>
 
           {/* Search Bar */}
@@ -59,15 +70,41 @@ export default function Navbar() {
 
           {/* Nav Links */}
           <div className="flex items-center space-x-6">
-            <a href="/" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
+            <Link
+              href="/"
+              className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
+            >
               Home
-            </a>
-            <a href="#about" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
+            </Link>
+            <Link
+              href="#about"
+              className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
+            >
               About
-            </a>
-            <a href="#contact" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
+            </Link>
+            <Link
+              href="#contact"
+              className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
+            >
               Contact
-            </a>
+            </Link>
+
+            {/* Dynamic Sign Up / Logout */}
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition-all duration-300 font-bold"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/auth/signup"
+                className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition-all duration-300 font-bold"
+              >
+                Sign Up
+              </Link>
+            )}
           </div>
         </div>
       </div>
