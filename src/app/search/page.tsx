@@ -198,7 +198,7 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {/* YOUTUBE VIDEOS SECTION */}
+        {/* YOUTUBE  SECTION */}
         <div className="bg-white rounded-3xl shadow-2xl p-10 mb-10 border-4 border-red-500">
           <div className="flex items-center space-x-4 mb-8">
             <div className="bg-red-500 p-4 rounded-2xl">
