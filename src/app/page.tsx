@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, BookOpen, Map, Youtube, FileText, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
+import Navbar from "@/component/navbar";
+import Footer from "@/component/footer";
 
 export default function HomePage() {
   const [query, setQuery] = useState('');
@@ -26,59 +28,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-2 cursor-pointer">
-              <div className="bg-blue-600 p-2 rounded-lg transform transition-all duration-300 hover:scale-110 hover:rotate-6">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-black">
-                SkillzUp
-              </span>
-            </div>
-
-            {/* Search Bar */}
-            <div className="flex-1 max-w-2xl mx-8">
-              <form onSubmit={handleSearch}>
-                <div className="relative group">
-                  <input
-                    type="text"
-                    placeholder="Search for any course (e.g., Python, React, Machine Learning)..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="w-full px-6 py-3 pl-12 rounded-full border-2 border-blue-300 focus:border-blue-500 focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md text-black font-semibold"
-                  />
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black transition-colors" />
-                  <button
-                    type="submit"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-all duration-300 hover:shadow-lg font-bold"
-                  >
-                    Search
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Nav Links */}
-            <div className="flex items-center space-x-6">
-              <a href="/" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
-                Home
-              </a>
-              <a href="#about" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
-                About
-              </a>
-              <a href="#contact" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
-                Contact
-              </a>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+     
+      <Navbar />
       {/* Hero Section */}
       <main className="flex-1">
         <section className="max-w-7xl mx-auto px-4 py-20 text-center">
@@ -173,73 +124,8 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-blue-900 to-blue-800 text-white mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* About Section */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="bg-white p-2 rounded-lg">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
-                </div>
-                <span className="text-2xl font-bold text-white">SkillzUp</span>
-              </div>
-              <p className="text-white leading-relaxed font-semibold">
-                Your ultimate learning companion. We provide structured roadmaps, curated resources, and the latest updates for any skill you want to master.
-              </p>
-            </div>
-
-            {/* Quick Links */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold mb-4 text-white">Quick Links</h3>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-white hover:text-blue-300 transition-colors duration-300 flex items-center space-x-2 font-semibold">
-                    <span>→</span>
-                    <span>About Us</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-white hover:text-blue-300 transition-colors duration-300 flex items-center space-x-2 font-semibold">
-                    <span>→</span>
-                    <span>How It Works</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-white hover:text-blue-300 transition-colors duration-300 flex items-center space-x-2 font-semibold">
-                    <span>→</span>
-                    <span>Popular Courses</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-white hover:text-blue-300 transition-colors duration-300 flex items-center space-x-2 font-semibold">
-                    <span>→</span>
-                    <span>Contact</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Mission */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold mb-4 text-white">Our Mission</h3>
-              <p className="text-white leading-relaxed font-semibold">
-                We believe learning should be accessible, structured, and personalized. Our platform aggregates the best educational content from across the web to create your perfect learning journey.
-              </p>
-              <div className="pt-4">
-                <p className="text-white text-sm font-bold">Making education accessible to everyone, everywhere.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-blue-700 mt-8 pt-8 text-center">
-            <p className="text-white font-bold">&copy; 2025 SkillzUp. Built with passion for learners worldwide.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
+      
     </div>
   );
 }
