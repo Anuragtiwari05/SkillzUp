@@ -1,48 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*", // Allow all (safe locally)
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
 
 export async function POST(req: NextRequest) {
+  console.log("✅ [API] /api/search POST triggered");
+
   try {
-    const { topic } = await req.json();
+    const body = await req.json();
+    const { topic } = body;
 
     if (!topic) {
       return NextResponse.json(
-        { success: false, message: 'Topic is required' },
-        { status: 400 }
+        { success: false, message: "Topic is required" },
+        { status: 400, headers: corsHeaders }
       );
     }
 
-    // Replace this with your n8n webhook URL
-    // You can also set this in your .env file as N8N_WEBHOOK_URL
-    const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'http://localhost:2005/webhook-test/skillzup-search';
+    const n8nWebhookUrl =
+      process.env.N8N_WEBHOOK_URL ||
+      "http://127.0.0.1:2005/webhook/skillzup-search";
 
-    console.log('Sending request to n8n for topic:', topic);
+    console.log("🌐 Sending to n8n:", n8nWebhookUrl);
 
-    const n8nRes = await fetch(n8nWebhookUrl, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
+    const n8nResponse = await fetch(n8nWebhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ topic }),
     });
 
-    if (!n8nRes.ok) {
-      console.error('n8n request failed:', n8nRes.status, n8nRes.statusText);
+    if (!n8nResponse.ok) {
+      const errText = await n8nResponse.text();
+      console.error("❌ n8n responded with error:", errText);
       return NextResponse.json(
-        { success: false, message: 'Failed to fetch from n8n' },
-        { status: 500 }
+        { success: false, message: "n8n error", details: errText },
+        { status: 500, headers: corsHeaders }
       );
     }
 
-    const data = await n8nRes.json();
+    const data = await n8nResponse.json();
+    console.log("✅ Got data from n8n:", data);
 
-    console.log('Successfully received data from n8n');
-
-    return NextResponse.json(data);
-  } catch (err) {
-    console.error('Error in search API route:', err);
+    return NextResponse.json(data, { status: 200, headers: corsHeaders });
+  } catch (err: any) {
+    console.error("🔥 API Error:", err.message || err);
     return NextResponse.json(
-      { success: false, message: 'Server Error' },
-      { status: 500 }
+      { success: false, message: "Internal Server Error", error: err.message },
+      { status: 500, headers: corsHeaders }
     );
   }
 }

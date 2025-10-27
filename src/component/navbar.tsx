@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BookOpen, Search } from "lucide-react";
 
 export default function Navbar() {
   const [query, setQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Check if JWT token exists
@@ -16,20 +18,21 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-    console.log("Searching for:", query);
+
+    // ✅ Navigate to the search results page
+    router.push(`/search?topic=${encodeURIComponent(query.trim())}`);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       handleSearch(e as any);
     }
   };
 
   const handleLogout = () => {
-    // Clear JWT cookie
     document.cookie = "token=; path=/; max-age=0";
     setIsLoggedIn(false);
-    // Redirect to signup page after logout
     window.location.href = "/signup";
   };
 
@@ -54,7 +57,7 @@ export default function Navbar() {
                   placeholder="Search for any course (e.g., Python, React, Machine Learning)..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                   className="w-full px-6 py-3 pl-12 rounded-full border-2 border-blue-300 focus:border-blue-500 focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md text-black font-semibold"
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-black transition-colors" />
@@ -70,22 +73,13 @@ export default function Navbar() {
 
           {/* Nav Links */}
           <div className="flex items-center space-x-6">
-            <Link
-              href="/"
-              className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
-            >
+            <Link href="/" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
               Home
             </Link>
-            <Link
-              href="#about"
-              className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
-            >
+            <Link href="#about" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
               About
             </Link>
-            <Link
-              href="#contact"
-              className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
-            >
+            <Link href="#contact" className="text-black hover:text-blue-600 transition-colors duration-300 font-bold">
               Contact
             </Link>
 
