@@ -11,17 +11,17 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // ✅ Check if user is logged in
+  // ✅ Check login status from /api/auth/me
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // For now: simple check (works in dev)
-        const hasToken = document.cookie.includes("token");
-        setIsLoggedIn(hasToken);
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include", // include cookies
+        });
 
-        // ✅ Later (production): replace with
-        // const res = await fetch("/api/auth/me", { credentials: "include" });
-        // setIsLoggedIn(res.ok);
+        const data = await res.json();
+        setIsLoggedIn(data.success === true);
       } catch (err) {
         console.error("Auth check failed:", err);
         setIsLoggedIn(false);
@@ -29,33 +29,32 @@ export default function Navbar() {
         setLoading(false);
       }
     };
+
     checkAuth();
   }, []);
 
-  // ✅ Handle search
+  // ✅ Search handler
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     router.push(`/search?topic=${encodeURIComponent(query.trim())}`);
   };
 
-  // ✅ Handle logout
+  // ✅ Logout handler
   const handleLogout = async () => {
     try {
-      // Temporary local clear
-      document.cookie = "token=; path=/; max-age=0";
-
-      // ✅ Later: call your logout API route
-      // await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
       setIsLoggedIn(false);
-      router.push("/login");
+      router.push("/auth/login");
     } catch (err) {
       console.error("Logout failed:", err);
     }
   };
 
-  if (loading) return null; // Prevent flicker while checking auth
+  if (loading) return null; // Prevent flicker
 
   return (
     <nav className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-md">
@@ -131,10 +130,10 @@ export default function Navbar() {
               </button>
             ) : (
               <Link
-                href="/auth/signup"
+                href="/auth/login"
                 className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition-all duration-300 font-bold"
               >
-                Sign Up
+                Login
               </Link>
             )}
           </div>
