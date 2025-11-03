@@ -13,25 +13,15 @@ export async function GET() {
     await dbConnect();
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
-
     if (!token)
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const decoded: any = jwt.verify(token, JWT_SECRET);
-    const sessions = await ChatSession.find({ userId: decoded.userId }).sort({
-      updatedAt: -1,
-    });
-
+    const sessions = await ChatSession.find({ userId: decoded.userId }).sort({ updatedAt: -1 });
     return NextResponse.json(sessions);
   } catch (err) {
-    console.error("GET /api/chat error:", err);
-    return NextResponse.json(
-      { success: false, error: "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error("❌ GET /api/chat error:", err);
+    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -41,19 +31,12 @@ export async function POST(req: Request) {
     const { message, sessionId } = await req.json();
 
     if (!message)
-      return NextResponse.json(
-        { success: false, error: "Message required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Message required" }, { status: 400 });
 
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
-
     if (!token)
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const userId = decoded.userId;
@@ -61,22 +44,14 @@ export async function POST(req: Request) {
 
     let session = await ChatSession.findOne({ sessionId: activeSessionId });
     if (!session)
-      session = new ChatSession({
-        userId,
-        sessionId: activeSessionId,
-        messages: [],
-      });
+      session = new ChatSession({ userId, sessionId: activeSessionId, messages: [] });
 
-    // Save user message
-    session.messages.push({
-      role: "user",
-      content: message,
-      timestamp: new Date(),
-    });
+    session.messages.push({ role: "user", content: message, timestamp: new Date() });
 
-    // ✅ Correct Gemini API format
+    console.log("⚙️ Sending request to Gemini API...");
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,20 +67,18 @@ export async function POST(req: Request) {
     );
 
     const data = await response.json();
+    console.log("🤖 Gemini API raw response:", JSON.stringify(data, null, 2));
 
     const aiMessage =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Sorry, I’m not sure how to respond.";
 
-    // Save AI message
-    session.messages.push({
-      role: "assistant",
-      content: aiMessage,
-      timestamp: new Date(),
-    });
+    console.log("✅ Gemini response:", aiMessage);
 
+    session.messages.push({ role: "assistant", content: aiMessage, timestamp: new Date() });
     await session.save();
+
+    console.log("💾 Chat session saved successfully");
 
     return NextResponse.json({
       success: true,
@@ -113,10 +86,7 @@ export async function POST(req: Request) {
       sessionId: activeSessionId,
     });
   } catch (err: any) {
-    console.error("POST /api/chat error:", err);
-    return NextResponse.json(
-      { success: false, error: err.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error("❌ POST /api/chat error:", err);
+    return NextResponse.json({ success: false, error: err.message || "Internal Server Error" }, { status: 500 });
   }
 }
