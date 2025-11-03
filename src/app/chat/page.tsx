@@ -17,14 +17,13 @@ export default function ChatPage() {
 
   const handleSend = () => {
     if (!message.trim()) return;
-    // You can call your ChatBox send function via props or context later
-    console.log("User message:", message);
+    console.log("User message:", message); // integrate with ChatBox later
     setMessage("");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-900 flex flex-col">
-      {/* Header Section */}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-900">
+      {/* 🧭 Header */}
       <header className="flex justify-between items-center px-6 py-4 bg-white shadow-md sticky top-0 z-20">
         <div className="flex items-center space-x-3">
           <button
@@ -43,13 +42,13 @@ export default function ChatPage() {
         </p>
       </header>
 
-      {/* Main Chat Layout */}
+      {/* 🧩 Main Chat Layout */}
       <main className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <motion.div
-          initial={{ x: -60, opacity: 0 }}
+        {/* 🧭 Sidebar */}
+        <motion.aside
+          initial={{ x: -40, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="hidden md:flex bg-white border-r border-blue-200 shadow-md w-72 flex-col"
         >
           <Sidebar
@@ -57,26 +56,26 @@ export default function ChatPage() {
             onNewChat={handleNewChat}
             onSelectChat={handleSelectChat}
           />
-        </motion.div>
+        </motion.aside>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 relative">
+        {/* 💬 Chat Area */}
+        <section className="flex-1 flex flex-col items-center justify-between p-4 md:p-8 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="w-full max-w-4xl h-[75vh] bg-white rounded-3xl shadow-2xl border-4 border-blue-200 overflow-hidden relative flex flex-col"
+            className="w-full max-w-4xl h-[75vh] bg-white rounded-3xl shadow-2xl border-4 border-blue-200 overflow-hidden flex flex-col relative"
           >
-            {/* Glowing Gradient Overlay */}
+            {/* Glowing Overlay */}
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400 via-blue-200 to-purple-300 opacity-20 blur-3xl pointer-events-none animate-pulse" />
-            
-            {/* Chat Messages Section */}
+
+            {/* Chat messages area */}
             <div className="flex-1 overflow-y-auto px-6 py-6 z-10">
               <ChatBox sessionId={currentSessionId} />
             </div>
 
-            {/* Typing Box (Like ChatGPT) */}
-            <div className="relative z-20 border-t border-blue-200 bg-white/90 backdrop-blur-md px-4 py-3">
+            {/* 📝 ChatGPT-style Input Bar */}
+            <div className="relative z-20 border-t border-blue-200 bg-white/95 backdrop-blur-md px-4 py-3">
               <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-full px-4 py-2 shadow-inner">
                 <input
                   type="text"
@@ -99,10 +98,10 @@ export default function ChatPage() {
               </div>
             </div>
           </motion.div>
-        </div>
+        </section>
       </main>
 
-      {/* Floating Start New Chat Button */}
+      {/* Floating New Chat Button */}
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
