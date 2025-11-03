@@ -5,21 +5,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, Search } from "lucide-react";
 
-export default function Navbar() {
+interface NavbarProps {
+  onSearch?: (searchQuery: string) => void; // ✅ Proper prop typing
+}
+
+export default function Navbar({ onSearch }: NavbarProps) {
   const [query, setQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // ✅ Check login status from /api/auth/me
+  // ✅ Check login status
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await fetch("/api/auth/me", {
           method: "GET",
-          credentials: "include", // include cookies
+          credentials: "include",
         });
-
         const data = await res.json();
         setIsLoggedIn(data.success === true);
       } catch (err) {
@@ -37,7 +40,14 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-    router.push(`/search?topic=${encodeURIComponent(query.trim())}`);
+
+    if (onSearch) {
+      // Pass query to parent page (if provided)
+      onSearch(query.trim());
+    } else {
+      // Default behavior — navigate to /search
+      router.push(`/search?topic=${encodeURIComponent(query.trim())}`);
+    }
   };
 
   // ✅ Logout handler
@@ -54,7 +64,7 @@ export default function Navbar() {
     }
   };
 
-  if (loading) return null; // Prevent flicker
+  if (loading) return null;
 
   return (
     <nav className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-md">
@@ -120,7 +130,7 @@ export default function Navbar() {
               Contact
             </Link>
 
-            {/* ✅ Dynamic Auth Button */}
+            {/* Auth Button */}
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
