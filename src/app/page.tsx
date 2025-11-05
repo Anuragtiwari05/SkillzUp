@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import FloatingChatButton from '@/component/FloatingChatButton';
 import {
   Map,
   Youtube,
@@ -136,14 +137,7 @@ export default function HomePage() {
 
       <Footer />
 
-      {/* ✅ Floating Sticky Chat Button */}
-      <button
-        onClick={() => router.push('/chat')}
-        className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 transition-all duration-300 flex items-center justify-center z-50"
-        aria-label="Chat with AI"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
+      <FloatingChatButton />
     </div>
   );
 }
