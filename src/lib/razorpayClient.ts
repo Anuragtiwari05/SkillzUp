@@ -3,7 +3,7 @@
 /**This file creates and exports a single Razorpay client instance configured with your secret keys.
 That client lets your backend securely talk to Razorpay — to:
 
-🧾 create payment orders
+// 🧾 create payment orders
 
 🔁 create subscriptions
 
