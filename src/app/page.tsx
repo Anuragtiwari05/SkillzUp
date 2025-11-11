@@ -1,17 +1,20 @@
 'use client';
 
+import Link from "next/link";
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import FloatingChatButton from '@/component/FloatingChatButton';
 import {
   Map,
-  Youtube,
+  
   FileText,
   TrendingUp,
   Sparkles,
   ArrowRight,
   MessageCircle,
 } from 'lucide-react';
+import { YoutubeIcon } from 'lucide-react';
+
 import Navbar from '@/component/navbar';
 import Footer from '@/component/footer';
 
@@ -33,14 +36,16 @@ export default function HomePage() {
       color: 'bg-blue-100',
       iconColor: 'text-blue-600',
       borderColor: 'border-blue-300',
+      
     },
     {
-      icon: Youtube,
+      icon: YoutubeIcon,
       title: 'Best Channels',
       desc: 'Curated video content from top educators',
       color: 'bg-red-100',
       iconColor: 'text-red-600',
       borderColor: 'border-red-300',
+      link: '/features/yt',
     },
     {
       icon: FileText,
@@ -99,24 +104,31 @@ export default function HomePage() {
               </button>
             </div>
           </div>
-
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
-            {features.map((feature, idx) => (
-              <div
-                key={idx}
-                className={`bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-3 cursor-pointer border-4 ${feature.borderColor}`}
-              >
-                <div
-                  className={`${feature.color} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300`}
-                >
-                  <feature.icon className={`w-10 h-10 ${feature.iconColor}`} />
-                </div>
-                <h3 className="text-2xl font-black text-black mb-2">{feature.title}</h3>
-                <p className="text-black text-base font-semibold">{feature.desc}</p>
-              </div>
-            ))}
+{/* Feature Cards */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
+  {features.map((feature, idx) => (
+    <Link href={feature.link || "#"} key={idx} className="h-full">
+      <div
+        className={`bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-3 cursor-pointer border-4 ${feature.borderColor} h-full flex flex-col items-center justify-between`}
+      >
+        <div>
+          <div
+            className={`${feature.color} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300`}
+          >
+            <feature.icon className={`w-10 h-10 ${feature.iconColor}`} />
           </div>
+          <h3 className="text-2xl font-black text-black mb-2 text-center">
+            {feature.title}
+          </h3>
+          <p className="text-black text-base font-semibold text-center">
+            {feature.desc}
+          </p>
+        </div>
+      </div>
+    </Link>
+  ))}
+</div>
+
 
           {/* Stats Section */}
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
