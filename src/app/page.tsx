@@ -36,7 +36,7 @@ export default function HomePage() {
       color: 'bg-blue-100',
       iconColor: 'text-blue-600',
       borderColor: 'border-blue-300',
-      
+      link: '/features/roadmap',
     },
     {
       icon: YoutubeIcon,
