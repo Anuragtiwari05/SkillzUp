@@ -8,7 +8,7 @@ export interface IMessage {
 
 export interface IChatSession extends Document {
   userId: string; // linked to your User model _id
-  sessionId: string;
+  sessionId: string; // for session id
   messages: IMessage[];
   createdAt: Date;
 }
