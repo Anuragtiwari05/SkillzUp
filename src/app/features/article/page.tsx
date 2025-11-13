@@ -21,7 +21,7 @@ export default function ArticlesFeaturePage() {
     setArticles([]);
 
     try {
-      const res = await fetch(`/api/features/articles?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/features/article?q=${encodeURIComponent(query)}`);
       if (!res.ok) throw new Error('Failed to fetch articles');
 
       const data = await res.json();

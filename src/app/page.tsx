@@ -54,6 +54,7 @@ export default function HomePage() {
       color: 'bg-green-100',
       iconColor: 'text-green-600',
       borderColor: 'border-green-300',
+      link: '/features/article',
     },
     {
       icon: TrendingUp,
