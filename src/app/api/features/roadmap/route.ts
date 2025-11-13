@@ -62,7 +62,7 @@ export async function GET(req: Request) {
     const data = await response.json();
     console.log("✅ Gemini API returned:", data);
 
-    
+    // Extract AI text response
     const outputText = data?.candidates?.[0]?.content?.[0]?.text || "{}";
 
     let roadmapJSON;
