@@ -63,6 +63,7 @@ export default function HomePage() {
       color: 'bg-purple-100',
       iconColor: 'text-purple-600',
       borderColor: 'border-purple-300',
+      link: '/features/news',
     },
   ];
 
@@ -95,15 +96,7 @@ export default function HomePage() {
               Get structured learning paths, curated YouTube channels, expert articles, and trending news — all tailored to accelerate your growth.
             </p>
 
-            <div className="pt-6">
-              <button
-                onClick={() => document.querySelector('input')?.focus()}
-                className="inline-flex items-center space-x-2 bg-blue-600 text-white px-10 py-5 rounded-full font-black text-xl hover:bg-blue-700 transition-all duration-300 hover:shadow-2xl transform hover:scale-105"
-              >
-                <span>Start Learning Now</span>
-                <ArrowRight className="w-6 h-6" />
-              </button>
-            </div>
+            
           </div>
 {/* Feature Cards */}
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">

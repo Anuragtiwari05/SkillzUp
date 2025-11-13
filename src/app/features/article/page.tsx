@@ -46,6 +46,7 @@ export default function ArticlesFeaturePage() {
       <nav className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-16">
           
+          {/* Back + Logo */}
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.push('/')}
@@ -64,6 +65,7 @@ export default function ArticlesFeaturePage() {
             </div>
           </div>
 
+          {/* Search */}
           <form
             onSubmit={handleSearch}
             className="flex items-center space-x-3 bg-white rounded-full border-2 border-blue-400 px-4 py-2 shadow-sm hover:shadow-lg transition-all duration-300 w-full max-w-xl mx-auto"
