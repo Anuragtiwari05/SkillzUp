@@ -1,81 +1,94 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import { GoogleAuth } from "google-auth-library";
 
 export async function GET(req: Request) {
   console.log("🛰️ Incoming request to /api/features/roadmap");
 
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q") || "";
-  console.log("🔍 Roadmap query received:", query);
+  const query = searchParams.get("q");
 
   if (!query) {
-    return NextResponse.json(
-      { error: "Please provide a topic (?q=topic)" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing query" }, { status: 400 });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error("❌ Missing Google API key");
+    return NextResponse.json({ error: "Missing Google API key" }, { status: 500 });
   }
 
   try {
-    // Path to your service account JSON
-    const keyFilePath = path.join(process.cwd(), "service-account.json");
-
-    if (!fs.existsSync(keyFilePath)) {
-      console.error("❌ Missing service-account.json for Gemini API!");
-      return NextResponse.json({ error: "Service account not found" }, { status: 500 });
-    }
-
-    const auth = new GoogleAuth({
-      keyFile: keyFilePath,
-      scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-    });
-
-    const client = await auth.getClient();
-    const accessToken = await client.getAccessToken();
-
-    const url = "https://generativelanguage.googleapis.com/v1beta2/models/gemini-1.5-flash:generateText";
-
-    const payload = {
-      prompt: `You are a SkillzUp roadmap agent. Generate a structured roadmap for learning "${query}". Return JSON with stages, topics, resources, and estimated time per stage.`,
-      temperature: 0.7,
-      maxOutputTokens: 800,
-    };
-
     console.log("🌐 Sending request to Gemini API...");
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `
+Generate a clean, structured, and step-by-step *learning roadmap* for "${query}".
+Format it in strict JSON only (no markdown, no extra text).
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken.token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("❌ Gemini API error:", text);
-      return NextResponse.json({ error: text }, { status: response.status });
+The structure must look like this:
+{
+  "topic": "name",
+  "overview": "short summary of what the topic covers",
+  "roadmap": [
+    {
+      "stage": "Step name",
+      "description": "Explain what to learn in this step and why it matters",
+      "estimated_time": "e.g. 2 weeks",
+      "resources": [
+        { "title": "Resource Name", "type": "video | course | article | book", "url": "https://..." }
+      ]
     }
+  ]
+}
+
+Make sure the output is realistic, motivating, and easy to follow for beginners.
+`,
+                },
+              ],
+            },
+          ],
+        }),
+      }
+    );
 
     const data = await response.json();
-    console.log("✅ Gemini API returned:", data);
-
-    // Extract AI text response
-    const outputText = data?.candidates?.[0]?.content?.[0]?.text || "{}";
+    const text =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      data?.candidates?.[0]?.content?.text ||
+      "";
 
     let roadmapJSON;
     try {
-      roadmapJSON = JSON.parse(outputText);
-    } catch (err) {
-      console.error("⚠️ Failed to parse Gemini JSON:", err);
-      return NextResponse.json({ error: "Failed to parse roadmap JSON" }, { status: 500 });
+      roadmapJSON = JSON.parse(text);
+    } catch {
+      roadmapJSON = {
+        topic: query,
+        overview: "No structured data returned.",
+        roadmap: [
+          {
+            stage: "AI Response",
+            description: text || "Error parsing roadmap.",
+            estimated_time: "N/A",
+            resources: [],
+          },
+        ],
+      };
     }
 
-    return NextResponse.json(roadmapJSON);
+    return NextResponse.json(roadmapJSON, { status: 200 });
   } catch (error) {
-    console.error("🔥 Error in /api/features/roadmap:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("💥 Error fetching roadmap:", error);
+    return NextResponse.json({ error: "Failed to fetch roadmap" }, { status: 500 });
   }
 }

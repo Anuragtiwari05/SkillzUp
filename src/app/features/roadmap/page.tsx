@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Search, ArrowLeft } from 'lucide-react';
+import { BookOpen, Search, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export default function RoadmapPage() {
   const [query, setQuery] = useState('');
   const [roadmap, setRoadmap] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+
+  useEffect(() => setIsClient(true), []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-
     setLoading(true);
     setError('');
     setRoadmap(null);
@@ -27,8 +29,9 @@ export default function RoadmapPage() {
       }
 
       const data = await res.json();
+      console.log("✅ Roadmap received:", data);
       setRoadmap(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error("❌ Error fetching roadmap:", err);
       setError('Something went wrong. Please try again.');
     } finally {
@@ -36,10 +39,14 @@ export default function RoadmapPage() {
     }
   };
 
+  if (!isClient) return null;
+
+  const roadmapArray = Array.isArray(roadmap?.roadmap) ? roadmap.roadmap : [];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Navbar */}
-      <nav className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-md">
+      <nav className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <button
@@ -48,10 +55,7 @@ export default function RoadmapPage() {
             >
               <ArrowLeft className="w-6 h-6 text-black" />
             </button>
-            <div
-              className="flex items-center space-x-2 cursor-pointer"
-              onClick={() => router.push('/')}
-            >
+            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/')}>
               <div className="bg-blue-600 p-2 rounded-lg hover:scale-110 transition">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
@@ -59,7 +63,6 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* Search Bar */}
           <form
             onSubmit={handleSearch}
             className="flex items-center space-x-3 bg-white rounded-full border-2 border-red-400 px-4 py-2 shadow-sm hover:shadow-lg transition-all duration-300 w-full max-w-xl mx-auto"
@@ -82,11 +85,11 @@ export default function RoadmapPage() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-10">
+      <main className="max-w-5xl mx-auto px-6 py-12">
         {loading && (
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <div className="w-16 h-16 border-4 border-red-300 border-t-red-600 rounded-full animate-spin mb-6"></div>
-            <p className="text-2xl font-bold text-black">Generating roadmap...</p>
+            <p className="text-2xl font-bold text-black">Generating your personalized roadmap...</p>
           </div>
         )}
 
@@ -98,61 +101,65 @@ export default function RoadmapPage() {
 
         {!loading && !error && !roadmap && (
           <div className="flex flex-col items-center justify-center py-40 text-center">
-            <h2 className="text-3xl font-bold text-black mb-2">
-              Generate a Skill Learning Roadmap
-            </h2>
-            <p className="text-lg text-gray-600">
-              Enter a skill or topic above to receive a structured roadmap.
-            </p>
+            <h2 className="text-3xl font-bold text-black mb-2">Generate a Skill Learning Roadmap</h2>
+            <p className="text-lg text-gray-600">Enter a skill or topic above to receive a structured, beautiful roadmap.</p>
           </div>
         )}
 
-        {!loading && roadmap && (
-          <div>
-            <h2 className="text-4xl font-black text-black mb-8 text-center">
+        {!loading && roadmapArray.length > 0 && (
+          <div className="mt-6 space-y-10">
+            <h2 className="text-4xl font-extrabold text-center text-black mb-10">
               🛣 Roadmap for "{roadmap.topic || query}"
             </h2>
-            <div className="space-y-6">
-              {roadmap.roadmap?.map((stage: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300"
-                >
-                  <h3 className="text-xl font-bold mb-2">{stage.stage}</h3>
-                  <p className="text-gray-700 mb-3">{stage.description}</p>
-                  {stage.resources?.length > 0 && (
-                    <ul className="list-disc ml-5 mb-3">
+
+            {roadmapArray.map((stage: any, idx: number) => (
+              <div
+                key={idx}
+                className="relative bg-white p-8 rounded-2xl shadow-md border border-gray-200 transition hover:shadow-lg"
+              >
+                <div className="absolute -left-3 top-5 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">
+                  {idx + 1}
+                </div>
+                <h3 className="text-2xl font-bold mb-3 flex items-center gap-2 text-red-700">
+                  <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  {stage.stage}
+                </h3>
+                <p className="text-gray-700 mb-4 leading-relaxed text-lg">{stage.description}</p>
+
+                {stage.resources?.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">📚 Recommended Resources:</h4>
+                    <ul className="list-disc ml-6 space-y-1">
                       {stage.resources.map((res: any, i: number) => (
                         <li key={i}>
                           <a
                             href={res.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-red-600 font-semibold hover:underline"
+                            className="text-blue-600 hover:underline font-medium"
                           >
                             {res.title} ({res.type})
                           </a>
                         </li>
                       ))}
                     </ul>
-                  )}
-                  {stage.estimated_time && (
-                    <p className="text-sm font-semibold text-gray-600">
-                      ⏱ Estimated Time: {stage.estimated_time}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+                  </div>
+                )}
+
+                {stage.estimated_time && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    ⏱ Estimated Time: <span className="font-semibold">{stage.estimated_time}</span>
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </main>
 
       <footer className="bg-blue-900 py-8 mt-10">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-xl font-black text-white">
-            &copy; 2025 SkillzUp. All rights reserved.
-          </p>
+          <p className="text-xl font-black text-white">&copy; 2025 SkillzUp. All rights reserved.</p>
         </div>
       </footer>
     </div>
