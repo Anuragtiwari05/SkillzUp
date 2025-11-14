@@ -15,31 +15,17 @@ interface SidebarProps {
   onSelectChat: (id: string) => void;
 }
 
-export default function Sidebar({
-  currentSessionId,
-  onNewChat,
-  onSelectChat,
-}: SidebarProps) {
+export default function Sidebar({ currentSessionId, onNewChat, onSelectChat }: SidebarProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🧠 Fetch chat sessions
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        console.log("🔄 Fetching chat sessions...");
         const res = await axios.get("/api/chat", { withCredentials: true });
-        if (res.status === 200) {
-          console.log("✅ Chat sessions loaded:", res.data);
-          setSessions(res.data);
-        } else {
-          console.warn("⚠️ Unexpected response:", res.status);
-        }
-      } catch (error: any) {
-        console.error(
-          "❌ Error loading chat sessions:",
-          error.response?.data || error.message
-        );
+        if (res.status === 200) setSessions(res.data);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -47,65 +33,61 @@ export default function Sidebar({
     fetchSessions();
   }, []);
 
-  // 🗑️ Delete chat
   const handleDelete = async (id: string) => {
     try {
-      console.log(`🗑️ Deleting chat with ID: ${id}`);
       await axios.delete(`/api/chat/${id}`, { withCredentials: true });
       setSessions((prev) => prev.filter((s) => s._id !== id));
-      console.log("✅ Chat deleted successfully");
-    } catch (error: any) {
-      console.error("❌ Error deleting chat:", error.response?.data || error.message);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   return (
-    <div className="h-full w-64 bg-gray-900 text-white flex flex-col p-4 space-y-4 border-r border-gray-800">
-      {/* ➕ New Chat Button */}
+    <div className="w-full h-full flex flex-col p-4 bg-white/90 backdrop-blur-xl space-y-4">
+
+      {/* New Chat Button */}
       <button
         onClick={onNewChat}
-        className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-all"
+        className="flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-all"
       >
         <Plus size={18} /> New Chat
       </button>
 
-      {/* 💬 Chat List */}
-      <div className="flex-1 overflow-y-auto mt-2 space-y-2">
+      {/* Chat Sessions List */}
+      <div className="flex-1 overflow-y-auto space-y-2">
         {loading ? (
-          <p className="text-sm text-gray-400 animate-pulse">Loading chats...</p>
+          <p className="text-sm text-gray-700 animate-pulse">Loading chats...</p>
         ) : sessions.length === 0 ? (
-          <p className="text-sm text-gray-400">No chats yet</p>
+          <p className="text-sm text-gray-700">No chats yet</p>
         ) : (
-          sessions.map((session) => (
-            <div
-              key={session._id}
-              className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all ${
-                currentSessionId === session._id
-                  ? "bg-blue-700"
-                  : "hover:bg-gray-800"
-              }`}
-              onClick={() => {
-                console.log("🟢 Opening chat with ID:", session._id);
-                onSelectChat(session._id);
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <MessageSquare size={16} />
-                <span className="text-sm truncate">
-                  {new Date(session.createdAt).toLocaleDateString()} Chat
-                </span>
-              </div>
+          sessions.map((s) => {
+            const isActive = currentSessionId === s._id;
+            return (
+              <div
+                key={s._id}
+                onClick={() => onSelectChat(s._id)}
+                className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition 
+                  ${isActive ? "bg-blue-600 text-white" : "bg-white hover:bg-gray-100 text-gray-900"}
+                `}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={16} className={isActive ? "text-white" : "text-gray-700"} />
+                  <span className="text-sm truncate">
+                    {new Date(s.createdAt).toLocaleDateString()} Chat
+                  </span>
+                </div>
 
-              <Trash2
-                size={14}
-                className="hover:text-red-500"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(session._id);
-                }}
-              />
-            </div>
-          ))
+                <Trash2
+                  size={14}
+                  className={`cursor-pointer ${isActive ? "text-white hover:text-red-300" : "text-gray-700 hover:text-red-500"}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(s._id);
+                  }}
+                />
+              </div>
+            );
+          })
         )}
       </div>
     </div>

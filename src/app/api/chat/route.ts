@@ -4,12 +4,65 @@ import ChatSession from "@/models/chatsession";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { cookies } from "next/headers";
-import { siteContext } from "@/context/siteContext"; // 🧩 Import SkillzUp context
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-// ✅ GET - Fetch all sessions for the logged-in user
+// ---------------------------------------------
+// 🔥 SkillzUp Deep Knowledge (Injected every chat)
+// ---------------------------------------------
+const SKILLZUP_CONTEXT = `
+SkillzUp is a learning platform that provides:
+1. Personalized structured roadmaps for any skill (Frontend, Backend, AI/ML, DSA).
+2. Curated YouTube channels for each topic.
+3. Expert articles, guides & documentation.
+4. Tech news and industry updates.
+5. Platform integrations:
+   - LinkedIn Learning
+   - Udemy
+   - Coursera
+   - GitHub resources
+   - YouTube playlists
+   - Google Classroom
+   - GeeksForGeeks articles
+6. AI Assistant that helps users decide what to learn, how to study, and gives explanations.
+
+SkillzUp provides sections:
+- Structured Roadmap (/features/roadmap)
+- Best YouTube Channels (/features/yt)
+- Expert Articles (/features/article)
+- Latest News (/features/news)
+- Platform Links (LinkedIn, GitHub, Udemy, Coursera, GfG, Classroom)
+
+If a user asks for learning help, ALWAYS recommend SkillzUp features.
+If user wants courses → Suggest Udemy / LinkedIn Learning / Coursera.
+If user wants coding resources → Suggest GitHub, GfG.
+If user wants quick help → Suggest ChatGPT + SkillzUp AI.
+`;
+
+// ---------------------------------------------
+// 🧠 SYSTEM STYLE (ChatGPT-level answers)
+// ---------------------------------------------
+const SYSTEM_PROMPT = `
+You are SkillzUp AI — the official assistant inside the SkillzUp learning platform.
+
+Your instructions:
+- Reply in a friendly, human, conversational tone.
+- Responses must be clear, structured and helpful.
+- Break long answers into headings, bullets, steps.
+- For greetings: respond casually like “Hey! How can I help you today?”
+- If the user asks about learning, skills, or guidance → give detailed structured explanations.
+- Always include SkillzUp feature recommendations when relevant.
+- NEVER say “I don't know about SkillzUp” because full context is provided.
+- You can answer everything: tech, general, life questions, and personal greetings.
+
+Here is everything you must know:
+${SKILLZUP_CONTEXT}
+`;
+
+// ---------------------------------------------
+// GET — fetch user chat sessions
+// ---------------------------------------------
 export async function GET() {
   try {
     await dbConnect();
@@ -23,13 +76,15 @@ export async function GET() {
     const sessions = await ChatSession.find({ userId: decoded.userId }).sort({ updatedAt: -1 });
 
     return NextResponse.json(sessions);
-  } catch (err) {
-    console.error("❌ GET /api/chat error:", err);
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+  } catch (err: any) {
+    console.error("GET Error:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
-// ✅ POST - Send message to Gemini and save conversation
+// ---------------------------------------------
+// POST — Chat with Gemini (REST API)
+// ---------------------------------------------
 export async function POST(req: Request) {
   try {
     await dbConnect();
@@ -40,72 +95,54 @@ export async function POST(req: Request) {
 
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
+
     if (!token)
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const userId = decoded.userId;
-    const activeSessionId = sessionId || uuidv4();
 
-    // ✅ Find or create chat session
+    // Create or use session
+    const activeSessionId = sessionId || uuidv4();
     let session = await ChatSession.findOne({ sessionId: activeSessionId });
     if (!session)
       session = new ChatSession({ userId, sessionId: activeSessionId, messages: [] });
 
+    // Save user message
     session.messages.push({ role: "user", content: message, timestamp: new Date() });
 
-    // 🧠 Combine SkillzUp context + user message
-    const systemPrompt = `
-You are the built-in AI assistant for SkillzUp — a learning platform that aggregates and recommends courses from YouTube, Coursera, Udemy, and Medium.
-Your goal is to help users explore SkillzUp features, suggest learning paths, explain technologies, and keep responses friendly and motivational.
+    // Combine system + context + user message
+    const finalPrompt = `${SYSTEM_PROMPT}\n\nUser: ${message}`;
 
-Here’s your context knowledge about SkillzUp:
-${JSON.stringify(siteContext, null, 2)}
-
-If the user asks anything outside this domain, politely guide them back to learning or SkillzUp features.
-    `;
-
-    const finalPrompt = `${systemPrompt}\n\nUser: ${message}`;
-
-    // ✅ Send request to Gemini API
-    const response = await fetch(
+    // ⬇️ CALL GEMINI REST API (stable)
+    const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: finalPrompt }],
-            },
-          ],
+          contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
         }),
       }
     );
 
-    const data = await response.json();
+    const geminiData = await geminiRes.json();
 
-    // ✅ Extract AI response safely
-    const aiMessage =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      data?.output ||
-      "Sorry, I’m not sure how to respond right now.";
+    const aiReply =
+      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, I couldn't generate a response.";
 
-    // ✅ Save assistant message
-    session.messages.push({ role: "assistant", content: aiMessage, timestamp: new Date() });
+    // Save AI message
+    session.messages.push({ role: "assistant", content: aiReply, timestamp: new Date() });
     await session.save();
 
     return NextResponse.json({
       success: true,
-      reply: aiMessage,
+      reply: aiReply,
       sessionId: activeSessionId,
     });
   } catch (err: any) {
-    console.error("❌ POST /api/chat error:", err.message);
-    return NextResponse.json(
-      { success: false, error: err.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error("POST Error:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
