@@ -18,6 +18,7 @@ export async function GET(req: Request) {
 
   try {
     console.log("🌐 Sending request to Gemini API...");
+
     const response = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
       {
@@ -53,7 +54,7 @@ The structure must look like this:
 }
 
 Make sure the output is realistic, motivating, and easy to follow for beginners.
-`,
+`
                 },
               ],
             },
@@ -63,15 +64,27 @@ Make sure the output is realistic, motivating, and easy to follow for beginners.
     );
 
     const data = await response.json();
-    const text =
+    console.log("Raw Gemini response:", JSON.stringify(data, null, 2));
+
+    const rawText =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       data?.candidates?.[0]?.content?.text ||
       "";
 
+    // Clean up the response
+    const text = rawText.trim();
+
+    // Attempt to extract valid JSON from AI response
     let roadmapJSON;
     try {
-      roadmapJSON = JSON.parse(text);
-    } catch {
+      const match = text.match(/\{[\s\S]*\}/); // Extract first JSON object
+      roadmapJSON = match ? JSON.parse(match[0]) : null;
+    } catch (err) {
+      roadmapJSON = null;
+    }
+
+    // Fallback if parsing fails
+    if (!roadmapJSON) {
       roadmapJSON = {
         topic: query,
         overview: "No structured data returned.",
