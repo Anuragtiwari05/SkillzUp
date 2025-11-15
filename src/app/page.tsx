@@ -4,6 +4,7 @@ import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/navigation";
 import FloatingChatButton from "@/component/FloatingChatButton";
+import Subscription from "@/component/Subscription";
 import {
   Map,
   FileText,
@@ -347,6 +348,7 @@ export default function HomePage() {
               </a>
             </div>
           </div>
+          <Subscription />
         </section>
       </main>
 
