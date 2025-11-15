@@ -56,7 +56,7 @@ export default function SubscriptionPage() {
               onClick={() => router.push(`/pricing?plan=${plan.id}`)}
               className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 transition"
             >
-              Subscribe
+              Buy Now
             </button>
           </div>
         ))}
