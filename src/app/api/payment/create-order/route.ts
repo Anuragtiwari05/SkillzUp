@@ -39,9 +39,9 @@ export async function POST(req: Request) {
     } else if (planId) {
       // If you want plan-based pricing here, map planId -> price (simple fallback)
       const planMap: Record<string, number> = {
-        plan6: 50,
-        plan12: 80,
-        plan15: 100,
+        plan6: 5,
+        plan12: 10,
+        plan15: 15,
       };
       amountInRupees = planMap[planId];
     }
