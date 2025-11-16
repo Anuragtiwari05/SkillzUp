@@ -9,57 +9,82 @@ import { cookies } from "next/headers";
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function POST(req: Request) {
-  try {
-    await dbConnect();
+  console.log("\n======================");
+  console.log("📌 CREATE ORDER API HIT");
+  console.log("======================");
 
-    // 1) Auth: read JWT token from cookies
+  try {
+    // DB connect
+    console.log("🔗 Connecting to DB...");
+    await dbConnect();
+    console.log("✅ DB Connected");
+
+    // ---------- AUTH ----------
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
+
+    console.log("🔍 Token received:", token ? "YES" : "NO");
+
     if (!token) {
+      console.log("❌ No token → Unauthorized");
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
+
     let decoded: any;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
+      console.log("✅ Token decoded:", decoded);
     } catch (e) {
+      console.log("❌ JWT Decode Error:", e);
       return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
     }
-    const userId = decoded.userId;
 
-    // 2) Read request body
+    const userId = decoded.userId;
+    console.log("👤 User ID:", userId);
+
+    // ---------- BODY ----------
     const body = await req.json();
-    // Accept either amountInRupees OR planId with price mapping
+    console.log("📦 Request Body:", body);
+
     const { amount, planId, currency = "INR", receipt } = body;
 
-    // Basic validation
     let amountInRupees: number | undefined = undefined;
 
     if (typeof amount === "number" && amount > 0) {
       amountInRupees = amount;
+      console.log("💰 Amount (given directly):", amountInRupees);
     } else if (planId) {
-      // If you want plan-based pricing here, map planId -> price (simple fallback)
       const planMap: Record<string, number> = {
         plan6: 5,
         plan12: 10,
         plan15: 15,
       };
       amountInRupees = planMap[planId];
+      console.log("💰 Amount (from plan):", amountInRupees, "Plan:", planId);
     }
 
     if (!amountInRupees || amountInRupees <= 0) {
-      return NextResponse.json({ success: false, error: "Invalid amount or planId" }, { status: 400 });
+      console.log("❌ Invalid amount or planId");
+      return NextResponse.json({
+        success: false,
+        error: "Invalid amount or planId",
+      }, { status: 400 });
     }
 
-    // 3) Create Razorpay order (amount in paise)
+    // ---------- Razorpay Order ----------
     const options = {
-      amount: Math.round(amountInRupees * 100), // paise
+      amount: Math.round(amountInRupees * 100),
       currency,
       receipt: receipt || `rcpt_${Date.now()}`,
     };
 
+    console.log("📤 Creating Razorpay Order with options:", options);
+
     const order = await razorpay.orders.create(options);
 
-    // 4) Save Payment record in DB with status "created"
+    console.log("✅ Razorpay Order Created:", order.id);
+
+    // ---------- Save Payment ----------
     const paymentDoc = new Payment({
       userId,
       amount: amountInRupees,
@@ -70,15 +95,17 @@ export async function POST(req: Request) {
     });
 
     await paymentDoc.save();
+    console.log("💾 Payment Saved in DB:", paymentDoc._id);
 
-    // 5) Return order + payment id
+    // ---------- RETURN ----------
     return NextResponse.json({
       success: true,
       order,
       paymentRecordId: paymentDoc._id,
     });
+
   } catch (err: any) {
-    console.error("❌ create-order error:", err);
+    console.error("❌ ERROR in create-order:", err);
     return NextResponse.json({
       success: false,
       error: err.message || "Internal Server Error",

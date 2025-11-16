@@ -46,21 +46,30 @@ export default function PaymentPage() {
       alert("Razorpay failed to load");
       return;
     }
+console.log("🔑 Frontend Razorpay Key =", process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
 
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-      amount: order.amount,
-      currency: order.currency,
-      name: "SkillzUp Premium",
-      description: `${plan.duration} Subscription`,
-      order_id: order.id,
+   const options = {
+  key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+  amount: order.amount,
+  currency: order.currency,
+  name: "SkillzUp Premium",
+  description: `${plan.duration} Subscription`,
+  order_id: order.id,
 
-      handler: function () {
-        router.push("/payment/success");
-      },
+  // ✅ ADD THIS BLOCK
+  prefill: {
+    name: "SkillzUp User",
+    email: "user@example.com",
+    contact: "9999999999",
+  },
 
-      theme: { color: "#2563eb" },
-    };
+  theme: { color: "#2563eb" },
+
+  handler: function () {
+    router.push("/payment/success");
+  },
+};
+
 
     const paymentObject = new (window as any).Razorpay(options);
     paymentObject.open();
