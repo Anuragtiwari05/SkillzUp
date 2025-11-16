@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import dbConnect from "@/utils/db";
 import Payment from "@/models/payment";
-import Subscription from "@/models/subscription";
-import User from "@/models/user";
+import Subscription from "@/models/subsciption";
+import User from "@/models/User";
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
