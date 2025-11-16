@@ -30,6 +30,32 @@ export default function SubscriptionPage() {
     },
   ];
 
+  const handleBuyNow = async (plan: any) => {
+    try {
+      const res = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId: plan.id,
+          amount: plan.price * 100, // Razorpay uses paise
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.order) {
+        alert("Failed to create order");
+        return;
+      }
+
+      // Redirect to payment page with order ID
+      router.push(`/payment?order_id=${data.order.id}&plan=${plan.id}`);
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong while creating order");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-20">
       <h1 className="text-5xl font-extrabold text-black mb-8 text-center">
@@ -45,15 +71,20 @@ export default function SubscriptionPage() {
             key={plan.id}
             className={`border-4 ${plan.borderColor} rounded-3xl shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center py-10 px-6 bg-white`}
           >
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${plan.bgColor}`}>
+            <div
+              className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 ${plan.bgColor}`}
+            >
               <span className="text-3xl font-bold text-black">₹{plan.price}</span>
             </div>
+
             <h3 className="text-2xl font-black mb-2">{plan.duration}</h3>
+
             <p className="text-gray-700 font-semibold mb-6 text-center">
               Access all premium resources during this period
             </p>
+
             <button
-              onClick={() => router.push(`/pricing?plan=${plan.id}`)}
+              onClick={() => handleBuyNow(plan)}
               className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 transition"
             >
               Buy Now
