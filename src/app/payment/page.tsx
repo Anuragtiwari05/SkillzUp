@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function PaymentPage() {
@@ -8,18 +8,14 @@ export default function PaymentPage() {
   const searchParams = useSearchParams();
   const planId = searchParams.get("plan");
 
-  const [loading, setLoading] = useState(false);
-
-  // Your plan details (must match subscription.tsx)
   const subscriptionPlans: any = {
-    plan6: { duration: "6 Months", price: 50, color: "yellow" },
-    plan12: { duration: "12 Months", price: 80, color: "green" },
-    plan15: { duration: "15 Months", price: 100, color: "blue" },
+    plan6: { duration: "6 Months", price: 5, color: "yellow" },
+    plan12: { duration: "12 Months", price: 10, color: "green" },
+    plan15: { duration: "15 Months", price: 15, color: "blue" },
   };
 
   const plan = planId ? subscriptionPlans[planId] : null;
 
-  // 🔵 Razorpay script loader
   const loadRazorpay = () =>
     new Promise((resolve) => {
       const script = document.createElement("script");
@@ -32,9 +28,6 @@ export default function PaymentPage() {
   const startPayment = async () => {
     if (!plan) return;
 
-    setLoading(true);
-
-    // Create order → backend
     const res = await fetch("/api/payment/create-order", {
       method: "POST",
       body: JSON.stringify({ planId }),
@@ -43,22 +36,19 @@ export default function PaymentPage() {
     const data = await res.json();
     if (!data.success) {
       alert("Payment error: " + data.error);
-      setLoading(false);
       return;
     }
 
     const order = data.order;
 
-    // Load razorpay SDK
     const loaded: any = await loadRazorpay();
     if (!loaded) {
-      alert("Razorpay failed to load. Check your internet.");
-      setLoading(false);
+      alert("Razorpay failed to load");
       return;
     }
 
     const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY, // public key
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
       amount: order.amount,
       currency: order.currency,
       name: "SkillzUp Premium",
@@ -69,18 +59,15 @@ export default function PaymentPage() {
         router.push("/payment/success");
       },
 
-      theme: { color: "#2563eb" }, // your blue theme
+      theme: { color: "#2563eb" },
     };
 
     const paymentObject = new (window as any).Razorpay(options);
     paymentObject.open();
-    setLoading(false);
   };
 
   useEffect(() => {
-    if (plan) {
-      startPayment();
-    }
+    if (plan) startPayment();
   }, [plan]);
 
   if (!plan)
@@ -94,13 +81,13 @@ export default function PaymentPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
       <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-lg text-center border-4 border-blue-300">
         <h1 className="text-4xl font-extrabold text-black mb-4">
-          Confirm Your Payment
+          Processing Your Payment...
         </h1>
 
         <p className="text-gray-600 text-lg mb-6">
           You are purchasing the{" "}
           <span className="font-bold text-blue-600">{plan.duration}</span>{" "}
-          premium subscription.
+          subscription. Please wait.
         </p>
 
         <div
@@ -118,17 +105,13 @@ export default function PaymentPage() {
           <p className="text-gray-700 font-medium mt-1">Total Amount</p>
         </div>
 
-        <button
-          onClick={startPayment}
-          disabled={loading}
-          className="px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all text-lg font-semibold disabled:opacity-50"
-        >
-          {loading ? "Processing..." : "Pay Now"}
-        </button>
+        <p className="text-gray-500 text-sm mt-2">
+          Please wait while we redirect you to Razorpay...
+        </p>
 
         <button
           onClick={() => router.push("/subscription")}
-          className="block mt-4 text-gray-500 hover:text-gray-700 text-sm"
+          className="block mt-6 text-gray-500 hover:text-gray-700 text-sm"
         >
           Cancel & Go Back
         </button>
