@@ -1,12 +1,17 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IUser extends Document {
-    _id: mongoose.Types.ObjectId;
+  _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
   username: string;
   password: string;
   createdAt: Date;
+
+  // Premium fields
+  isPremium: boolean;
+  plan: string | null;
+  expiresAt: Date | null;
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -32,11 +37,26 @@ const UserSchema: Schema<IUser> = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
+
+  // New fields for payment
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
+  plan: {
+    type: String,
+    default: null,
+  },
+  expiresAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 // Avoid recompiling model in Next.js hot reloads
-const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+const User: Model<IUser> =
+  mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
 
 export default User;
