@@ -1,4 +1,3 @@
-// src/app/api/payment/verify-webhook/route.ts
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import dbConnect from "@/utils/db";
@@ -12,11 +11,14 @@ export async function POST(req: Request) {
   try {
     await dbConnect();
 
-    const body = await req.text(); // RAW BODY required for signature check
+    const body = await req.text(); // RAW BODY is required for Razorpay signature verification
     const signature = req.headers.get("x-razorpay-signature");
 
     if (!signature) {
-      return NextResponse.json({ success: false, error: "Missing signature" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Missing signature" },
+        { status: 400 }
+      );
     }
 
     // Verify signature
@@ -27,39 +29,38 @@ export async function POST(req: Request) {
 
     if (expectedSignature !== signature) {
       console.log("❌ Invalid Webhook Signature");
-      return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Invalid signature" },
+        { status: 400 }
+      );
     }
 
     const data = JSON.parse(body);
-
-    // Razorpay payment events:
-    // - payment.captured
-    // - payment.failed
-    // - order.paid
     const event = data.event;
 
-    // Handle only successful payments
+    // Handle successful payment capture
     if (event === "payment.captured") {
       const paymentEntity = data.payload.payment.entity;
-
       const { order_id, amount } = paymentEntity;
 
       // Find DB payment record
       const paymentRecord = await Payment.findOne({ orderId: order_id });
 
       if (!paymentRecord) {
-        return NextResponse.json({ success: false, error: "Payment record not found" });
+        return NextResponse.json({
+          success: false,
+          error: "Payment record not found",
+        });
       }
 
-      // Mark payment as PAID
+      // Mark payment as paid
       paymentRecord.status = "paid";
       paymentRecord.paidAt = new Date();
       await paymentRecord.save();
 
-      // Activate subscription for user
       const userId = paymentRecord.userId;
 
-      // Convert amount to correct plan validity
+      // Determine subscription validity from amount
       let months = 0;
       if (amount / 100 === 50) months = 6;
       if (amount / 100 === 80) months = 12;
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + months);
 
+      // Store subscription in DB
       await Subscription.create({
         userId,
         amount: amount / 100,
@@ -77,15 +79,19 @@ export async function POST(req: Request) {
         status: "active",
       });
 
-      // Optionally update user model
-      await User.findByIdAndUpdate(userId, { isSubscribed: true });
+      // 🔥 Update USER Premium fields
+      await User.findByIdAndUpdate(userId, {
+        isPremium: true,
+        plan: `${months}-months`,
+        expiresAt: endDate,
+      });
 
-      console.log("🎉 Subscription activated:", userId);
+      console.log("🎉 Premium Activated for:", userId);
 
       return NextResponse.json({ success: true });
     }
 
-    // Payment failed
+    // Handle failed payments
     if (event === "payment.failed") {
       console.log("❌ Payment failed");
       return NextResponse.json({ success: true });
@@ -94,11 +100,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Webhook Error:", error);
-    return NextResponse.json({ success: false, error: "Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Server Error" },
+      { status: 500 }
+    );
   }
 }
 
-// Disable Next.js body parsing for webhooks
+// Disable body parsing for Razorpay webhooks
 export const config = {
   api: {
     bodyParser: false,
