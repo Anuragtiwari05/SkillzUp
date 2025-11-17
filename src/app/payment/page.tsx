@@ -119,7 +119,7 @@ console.log("🔑 Frontend Razorpay Key =", process.env.NEXT_PUBLIC_RAZORPAY_KEY
         </p>
 
         <button
-          onClick={() => router.push("/subscription")}
+          onClick={() => router.push("/")}
           className="block mt-6 text-gray-500 hover:text-gray-700 text-sm"
         >
           Cancel & Go Back

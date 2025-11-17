@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./aicomponents/sidebar";
 import ChatBox from "./aicomponents/chatbox";
 import axios from "axios";
@@ -20,7 +20,38 @@ export default function ChatPage() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
   const router = useRouter();
+
+  // 🔒 PREMIUM PROTECTION
+  useEffect(() => {
+    const checkPremium = async () => {
+      try {
+        const res = await axios.get("/api/user/me");
+
+        if (!res.data?.isPremium) {
+          // ❌ NOT PREMIUM → redirect to pricing section
+          router.push("/?scroll=premium");
+          return;
+        }
+      } catch (err) {
+        // If user not logged in or error → redirect home
+        router.push("/");
+      }
+
+      setChecking(false);
+    };
+
+    checkPremium();
+  }, []);
+
+  if (checking) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   const handleNewChat = () => {
     setCurrentSessionId(null);
@@ -53,10 +84,7 @@ export default function ChatPage() {
       } else {
         setMessages((prev) => [
           ...prev,
-          {
-            role: "assistant",
-            content: "⚠️ Unexpected server response.",
-          },
+          { role: "assistant", content: "⚠️ Unexpected server response." },
         ]);
       }
     } catch (error: any) {
@@ -112,7 +140,6 @@ export default function ChatPage() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-4xl mx-auto flex flex-col h-[78vh] bg-white rounded-3xl shadow-2xl border border-blue-200 relative overflow-hidden"
           >
-            {/* Aesthetic gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-200/40 via-white to-purple-200/30 blur-3xl pointer-events-none" />
 
             <div className="flex-1 overflow-y-auto p-6 z-10">
