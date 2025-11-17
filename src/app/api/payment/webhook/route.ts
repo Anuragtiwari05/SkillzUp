@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   try {
     await dbConnect();
 
-    const body = await req.text(); // RAW BODY is required for Razorpay signature verification
+    const body = await req.text(); 
     const signature = req.headers.get("x-razorpay-signature");
 
     if (!signature) {
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify signature
+    // 🔐 Verify Razorpay signature
     const expectedSignature = crypto
       .createHmac("sha256", WEBHOOK_SECRET)
       .update(body)
@@ -38,12 +38,12 @@ export async function POST(req: Request) {
     const data = JSON.parse(body);
     const event = data.event;
 
-    // Handle successful payment capture
+    // 🎯 PAYMENT SUCCESS EVENT
     if (event === "payment.captured") {
       const paymentEntity = data.payload.payment.entity;
-      const { order_id, amount } = paymentEntity;
+      const { order_id, amount } = paymentEntity; // Razorpay sends amount in paise
 
-      // Find DB payment record
+      // Find payment record
       const paymentRecord = await Payment.findOne({ orderId: order_id });
 
       if (!paymentRecord) {
@@ -53,33 +53,43 @@ export async function POST(req: Request) {
         });
       }
 
-      // Mark payment as paid
+      // Update payment status
       paymentRecord.status = "paid";
       paymentRecord.paidAt = new Date();
       await paymentRecord.save();
 
       const userId = paymentRecord.userId;
 
-      // Determine subscription validity from amount
+      // 💥 FIXED PLAN MAPPING (correct prices)
       let months = 0;
-      if (amount / 100 === 50) months = 6;
-      if (amount / 100 === 80) months = 12;
-      if (amount / 100 === 100) months = 15;
 
+      if (amount === 500) months = 6;      // ₹5 → 6 months
+      if (amount === 1000) months = 12;    // ₹10 → 12 months
+      if (amount === 1500) months = 15;    // ₹15 → 15 months
+
+      if (months === 0) {
+        console.log("❌ Invalid plan amount received:", amount);
+        return NextResponse.json(
+          { success: false, error: "Invalid amount" },
+          { status: 400 }
+        );
+      }
+
+      // Create subscription dates
       const startDate = new Date();
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + months);
 
-      // Store subscription in DB
+      // Save subscription
       await Subscription.create({
         userId,
-        amount: amount / 100,
+        amount: amount / 100, // convert paise → INR
         startDate,
         endDate,
         status: "active",
       });
 
-      // 🔥 Update USER Premium fields
+      // ⭐ Update user premium status
       await User.findByIdAndUpdate(userId, {
         isPremium: true,
         plan: `${months}-months`,
@@ -91,7 +101,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true });
     }
 
-    // Handle failed payments
+    // ❌ PAYMENT FAILED
     if (event === "payment.failed") {
       console.log("❌ Payment failed");
       return NextResponse.json({ success: true });
@@ -107,7 +117,6 @@ export async function POST(req: Request) {
   }
 }
 
-// Disable body parsing for Razorpay webhooks
 export const config = {
   api: {
     bodyParser: false,
