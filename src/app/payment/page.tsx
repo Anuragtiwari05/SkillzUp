@@ -1,5 +1,5 @@
 "use client";
-//payment shocasing page
+
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
