@@ -1,5 +1,5 @@
 'use client';
-
+export const dynamic = "force-dynamic";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BookOpen, Video, FileText, Newspaper, Loader2, ArrowLeft, ExternalLink, Clock, User, Play, TrendingUp } from 'lucide-react';
