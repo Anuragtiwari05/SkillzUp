@@ -1,8 +1,6 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Sidebar from "./aicomponents/sidebar";
 import ChatBox from "./aicomponents/chatbox";
 import axios from "axios";
@@ -20,38 +18,7 @@ export default function ChatPage() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
   const router = useRouter();
-
-  // 🔒 PREMIUM PROTECTION
-  useEffect(() => {
-    const checkPremium = async () => {
-      try {
-        const res = await axios.get("/api/user/me");
-
-        if (!res.data?.isPremium) {
-          // ❌ NOT PREMIUM → redirect to pricing section
-          router.push("/?scroll=premium");
-          return;
-        }
-      } catch (err) {
-        // If user not logged in or error → redirect home
-        router.push("/");
-      }
-
-      setChecking(false);
-    };
-
-    checkPremium();
-  }, []);
-
-  if (checking) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-white">
-        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-      </div>
-    );
-  }
 
   const handleNewChat = () => {
     setCurrentSessionId(null);

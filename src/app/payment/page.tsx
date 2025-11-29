@@ -8,13 +8,16 @@ export default function PaymentPage() {
   const searchParams = useSearchParams();
   const planId = searchParams.get("plan");
 
-  const subscriptionPlans: any = {
+  console.log("🔍 Plan from URL:", planId);
+
+  const subscriptionPlans: Record<string, any> = {
     plan6: { duration: "6 Months", price: 5, color: "yellow" },
     plan12: { duration: "12 Months", price: 10, color: "green" },
     plan15: { duration: "15 Months", price: 15, color: "blue" },
   };
 
   const plan = planId ? subscriptionPlans[planId] : null;
+  console.log("📌 Selected plan object:", plan);
 
   const loadRazorpay = () =>
     new Promise((resolve) => {
@@ -28,55 +31,60 @@ export default function PaymentPage() {
   const startPayment = async () => {
     if (!plan) return;
 
-    const res = await fetch("/api/payment/create-order", {
-      method: "POST",
-      body: JSON.stringify({ planId }),
-    });
+    console.log("🚀 Starting payment for plan:", planId);
 
-    const data = await res.json();
-    if (!data.success) {
-      alert("Payment error: " + data.error);
-      return;
+    try {
+      const res = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId, amount: plan.price * 100 }),
+      });
+
+      const data = await res.json();
+      console.log("📦 Order API response:", data);
+
+      if (!data.success || !data.order) {
+        alert("Payment creation failed: " + data.error);
+        return;
+      }
+
+      const order = data.order;
+      const loaded: any = await loadRazorpay();
+      if (!loaded) {
+        alert("Failed to load Razorpay SDK");
+        return;
+      }
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "SkillzUp Premium",
+        description: `${plan.duration} Subscription`,
+        order_id: order.id,
+        prefill: { name: "SkillzUp User", email: "user@example.com", contact: "9999999999" },
+        theme: { color: "#2563eb" },
+        handler: function (response: any) {
+          console.log("✅ Payment completed:", response);
+          // Redirect using window.location.href to avoid router issues
+          window.location.href = `/payment/success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&plan=${planId}`;
+        },
+      };
+
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.open();
+      console.log("💳 Razorpay opened");
+    } catch (error) {
+      console.error("❌ Error in startPayment:", error);
+      alert("Something went wrong while starting payment.");
     }
-
-    const order = data.order;
-
-    const loaded: any = await loadRazorpay();
-    if (!loaded) {
-      alert("Razorpay failed to load");
-      return;
-    }
-console.log("🔑 Frontend Razorpay Key =", process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
-
-   const options = {
-  key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-  amount: order.amount,
-  currency: order.currency,
-  name: "SkillzUp Premium",
-  description: `${plan.duration} Subscription`,
-  order_id: order.id,
-
-  // ✅ ADD THIS BLOCK
-  prefill: {
-    name: "SkillzUp User",
-    email: "user@example.com",
-    contact: "9999999999",
-  },
-
-  theme: { color: "#2563eb" },
-
-  handler: function () {
-    router.push("/payment/success");
-  },
-};
-
-
-    const paymentObject = new (window as any).Razorpay(options);
-    paymentObject.open();
   };
 
   useEffect(() => {
-    if (plan) startPayment();
+    if (plan) {
+      console.log("💡 Triggering payment for plan:", planId);
+      startPayment();
+    }
   }, [plan]);
 
   if (!plan)
@@ -88,43 +96,12 @@ console.log("🔑 Frontend Razorpay Key =", process.env.NEXT_PUBLIC_RAZORPAY_KEY
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
-      <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-lg text-center border-4 border-blue-300">
-        <h1 className="text-4xl font-extrabold text-black mb-4">
-          Processing Your Payment...
-        </h1>
-
-        <p className="text-gray-600 text-lg mb-6">
-          You are purchasing the{" "}
-          <span className="font-bold text-blue-600">{plan.duration}</span>{" "}
-          subscription. Please wait.
-        </p>
-
-        <div
-          className="p-6 rounded-2xl shadow-md mb-8"
-          style={{
-            backgroundColor:
-              plan.color === "yellow"
-                ? "#fef9c3"
-                : plan.color === "green"
-                ? "#dcfce7"
-                : "#dbeafe",
-          }}
-        >
-          <p className="text-3xl font-extrabold text-black">₹{plan.price}</p>
-          <p className="text-gray-700 font-medium mt-1">Total Amount</p>
-        </div>
-
-        <p className="text-gray-500 text-sm mt-2">
-          Please wait while we redirect you to Razorpay...
-        </p>
-
-        <button
-          onClick={() => router.push("/subscription")}
-          className="block mt-6 text-gray-500 hover:text-gray-700 text-sm"
-        >
-          Cancel & Go Back
-        </button>
-      </div>
+      <h1 className="text-4xl font-extrabold text-black mb-4">Processing Your Payment...</h1>
+      <p className="text-gray-600 text-lg mb-6">
+        You are purchasing the <span className="font-bold text-blue-600">{plan.duration}</span>{" "}
+        subscription. Please wait.
+      </p>
+      <p className="text-gray-500 text-sm mt-2">Please wait while we redirect you to Razorpay...</p>
     </div>
   );
 }
