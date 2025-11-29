@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, Search } from "lucide-react";
+import about from "../app/about/page";
+import contact from "../app/contact/page";
 
 interface NavbarProps {
   onSearch?: (searchQuery: string) => void; // ✅ Proper prop typing
@@ -118,13 +120,13 @@ export default function Navbar({ onSearch }: NavbarProps) {
               Home
             </Link>
             <Link
-              href="#about"
+              href="/about"
               className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
             >
               About
             </Link>
             <Link
-              href="#contact"
+              href="/contact"
               className="text-black hover:text-blue-600 transition-colors duration-300 font-bold"
             >
               Contact
