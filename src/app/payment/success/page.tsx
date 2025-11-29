@@ -1,10 +1,11 @@
-"use client";
+"use client"; // mark this file as client-only
 export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function PaymentSuccessClient() {
+export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
   const [paymentData, setPaymentData] = useState({
     paymentId: "",
@@ -13,11 +14,13 @@ export default function PaymentSuccessClient() {
   });
 
   useEffect(() => {
-    const payment_id = searchParams.get("payment_id") || "";
-    const order_id = searchParams.get("order_id") || "";
-    const plan = searchParams.get("plan") || "";
+    if (!searchParams) return;
 
-    setPaymentData({ paymentId: payment_id, orderId: order_id, planId: plan });
+    setPaymentData({
+      paymentId: searchParams.get("payment_id") || "",
+      orderId: searchParams.get("order_id") || "",
+      planId: searchParams.get("plan") || "",
+    });
   }, [searchParams]);
 
   return (
@@ -28,15 +31,9 @@ export default function PaymentSuccessClient() {
       </p>
 
       <div className="mt-4 text-gray-800">
-        <p>
-          <strong>Payment ID:</strong> {paymentData.paymentId}
-        </p>
-        <p>
-          <strong>Order ID:</strong> {paymentData.orderId}
-        </p>
-        <p>
-          <strong>Plan:</strong> {paymentData.planId}
-        </p>
+        {paymentData.paymentId && <p><strong>Payment ID:</strong> {paymentData.paymentId}</p>}
+        {paymentData.orderId && <p><strong>Order ID:</strong> {paymentData.orderId}</p>}
+        {paymentData.planId && <p><strong>Plan:</strong> {paymentData.planId}</p>}
       </div>
 
       <Link
