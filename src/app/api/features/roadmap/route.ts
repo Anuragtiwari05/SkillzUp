@@ -79,9 +79,10 @@ Make sure the output is realistic, motivating, and easy to follow for beginners.
     try {
       const match = text.match(/\{[\s\S]*\}/); // Extract first JSON object
       roadmapJSON = match ? JSON.parse(match[0]) : null;
-    } catch (err) {
-      roadmapJSON = null;
-    }
+    } catch (err: unknown) {
+  console.error('Error fetching roadmap:', err); // optional: log the error
+  roadmapJSON = null;
+}
 
     // Fallback if parsing fails
     if (!roadmapJSON) {
@@ -100,8 +101,10 @@ Make sure the output is realistic, motivating, and easy to follow for beginners.
     }
 
     return NextResponse.json(roadmapJSON, { status: 200 });
-  } catch (error) {
-    console.error("💥 Error fetching roadmap:", error);
-    return NextResponse.json({ error: "Failed to fetch roadmap" }, { status: 500 });
-  }
+  }catch (err: unknown) {
+  let message = "Unknown error";
+  if (err instanceof Error) message = err.message;
+  console.error(message);
+  return NextResponse.json({ success: false, error: message }, { status: 500 });
+}
 }

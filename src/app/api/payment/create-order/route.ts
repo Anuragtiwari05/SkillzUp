@@ -30,14 +30,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    let decoded: any;
+    let decoded: any = null;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
       console.log("✅ Token decoded:", decoded);
-    } catch (e) {
-      console.log("❌ JWT Decode Error:", e);
-      return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
-    }
+    }catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
+  }
+}
 
     const userId = decoded.userId;
     console.log("👤 User ID:", userId);
@@ -104,11 +109,13 @@ export async function POST(req: Request) {
       paymentRecordId: paymentDoc._id,
     });
 
-  } catch (err: any) {
-    console.error("❌ ERROR in create-order:", err);
-    return NextResponse.json({
-      success: false,
-      error: err.message || "Internal Server Error",
-    }, { status: 500 });
+  }catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
+}
 }

@@ -37,8 +37,10 @@ export async function GET(req: Request) {
     console.log("✅ News API returned", data.articles?.length, "articles");
 
     return NextResponse.json({ items: data.articles });
-  } catch (error) {
-    console.error("🔥 Error in /api/features/news:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-  }
+  } catch (err: unknown) {
+  let message = "Unknown error";
+  if (err instanceof Error) message = err.message;
+  console.error(message);
+  return NextResponse.json({ success: false, error: message }, { status: 500 });
+}
 }

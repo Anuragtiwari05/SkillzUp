@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
 const JWT_SECRET = process.env.JWT_SECRET!;
 
+
 // ---------------------------------------------
 // 🔥 SkillzUp Deep Knowledge (Injected every chat)
 // ---------------------------------------------
@@ -64,6 +65,7 @@ ${SKILLZUP_CONTEXT}
 // GET — fetch user chat sessions
 // ---------------------------------------------
 export async function GET() {
+  
   try {
     await dbConnect();
     const cookieStore = await cookies();
@@ -72,14 +74,19 @@ export async function GET() {
     if (!token)
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+   const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+;
     const sessions = await ChatSession.find({ userId: decoded.userId }).sort({ updatedAt: -1 });
 
     return NextResponse.json(sessions);
-  } catch (err: any) {
-    console.error("GET Error:", err);
+  } catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error("GET Error:", err.message);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
-  }
+  } else {
+    console.error("GET Error:", err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
+  }}
 }
 
 // ---------------------------------------------
@@ -99,7 +106,7 @@ export async function POST(req: Request) {
     if (!token)
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     const userId = decoded.userId;
 
     // Create or use session
@@ -141,8 +148,12 @@ export async function POST(req: Request) {
       reply: aiReply,
       sessionId: activeSessionId,
     });
-  } catch (err: any) {
-    console.error("POST Error:", err);
+  }catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error("GET Error:", err.message);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
-  }
+  } else {
+    console.error("GET Error:", err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
+  }}
 }

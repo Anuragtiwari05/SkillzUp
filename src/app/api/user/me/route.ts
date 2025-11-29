@@ -51,10 +51,13 @@ export async function GET() {
         expiresAt: user.expiresAt,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
+}
 }

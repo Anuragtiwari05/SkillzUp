@@ -20,7 +20,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     if (!token)
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     const userId = decoded.userId;
     console.log("👤 User ID decoded:", userId);
 
@@ -31,10 +31,15 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       return NextResponse.json({ success: false, error: "Chat not found" }, { status: 404 });
 
     return NextResponse.json({ success: true, message: "Chat deleted successfully" });
-  } catch (err: any) {
-    console.error("❌ DELETE /api/chat/[id] error:", err.message);
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+  }  catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
+}
 }
 
 // ✅ GET /api/chat/[id]
@@ -50,8 +55,8 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
     if (!token)
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    
     const userId = decoded.userId;
     console.log("👤 Decoded user ID:", userId);
 
@@ -64,8 +69,13 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
     console.log("💬 Returning messages count:", session.messages?.length);
     return NextResponse.json({ success: true, messages: session.messages });
-  } catch (err: any) {
-    console.error("❌ GET /api/chat/[id] error:", err.message);
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+  }  catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
+}
 }

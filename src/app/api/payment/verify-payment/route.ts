@@ -60,10 +60,13 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Payment verified & user premium activated",
     });
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, message: err.message },
-      { status: 500 }
-    );
+  }  catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
+}
 }

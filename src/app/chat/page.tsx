@@ -54,7 +54,7 @@ export default function ChatPage() {
           { role: "assistant", content: "⚠️ Unexpected server response." },
         ]);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "❌ Failed to get AI response." },

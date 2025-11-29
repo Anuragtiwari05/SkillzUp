@@ -18,8 +18,7 @@ interface ChatWindowProps {
 
 export default function ChatWindow({ sessionId }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+ 
 
   useEffect(() => {
     if (!sessionId) return;

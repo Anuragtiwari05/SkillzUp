@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/component/navbar';
-import Footer from '@/component/footer';
+
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -74,7 +73,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-black font-semibold mt-6">
-            Don't have an account?{' '}
+            Dont have an account?
             <a href="/auth/signup" className="text-blue-600 font-bold hover:underline">
               Sign Up
             </a>

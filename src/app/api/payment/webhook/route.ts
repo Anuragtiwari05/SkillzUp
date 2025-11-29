@@ -108,13 +108,15 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Webhook Error:", error);
-    return NextResponse.json(
-      { success: false, error: "Server Error" },
-      { status: 500 }
-    );
+  }  catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
+}
 }
 
 export const config = {

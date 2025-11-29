@@ -3,34 +3,49 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 
+// Define the Plan type
+type Plan = {
+  id: string;
+  name: string;
+  duration: string;
+  price: number;
+  borderColor: string;
+  bgColor: string;
+};
+
+// Subscription plans array
+const subscriptionPlans: Plan[] = [
+  {
+    id: "plan6",
+    name: "6 Months",
+    duration: "6 Months",
+    price: 5,
+    borderColor: "border-yellow-400",
+    bgColor: "bg-yellow-100",
+  },
+  {
+    id: "plan12",
+    name: "12 Months",
+    duration: "12 Months",
+    price: 10,
+    borderColor: "border-green-400",
+    bgColor: "bg-green-100",
+  },
+  {
+    id: "plan15",
+    name: "15 Months",
+    duration: "15 Months",
+    price: 15,
+    borderColor: "border-blue-400",
+    bgColor: "bg-blue-100",
+  },
+];
+
 export default function SubscriptionPage() {
   const router = useRouter();
 
-  const subscriptionPlans = [
-    {
-      id: "plan6",
-      duration: "6 Months",
-      price: 5,
-      borderColor: "border-yellow-400",
-      bgColor: "bg-yellow-100",
-    },
-    {
-      id: "plan12",
-      duration: "12 Months",
-      price: 10,
-      borderColor: "border-green-400",
-      bgColor: "bg-green-100",
-    },
-    {
-      id: "plan15",
-      duration: "15 Months",
-      price: 15,
-      borderColor: "border-blue-400",
-      bgColor: "bg-blue-100",
-    },
-  ];
-
-  const handleBuyNow = async (plan: any) => {
+  // Type-safe handleBuyNow function
+  const handleBuyNow = async (plan: Plan) => {
     try {
       const res = await fetch("/api/payment/create-order", {
         method: "POST",

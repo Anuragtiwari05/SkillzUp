@@ -11,7 +11,7 @@ export default function ContactPage() {
       <main className="flex-1 max-w-5xl mx-auto px-6 py-20">
         <h1 className="text-5xl font-black text-black mb-6">Contact Us</h1>
         <p className="text-xl text-black leading-relaxed mb-4">
-          Have questions or need assistance? We'd love to hear from you!
+          Have questions or need assistance? We,d love to hear from you!
         </p>
 
         <div className="mt-8 space-y-6">

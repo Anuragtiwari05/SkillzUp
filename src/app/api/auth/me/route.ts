@@ -21,11 +21,25 @@ export async function GET(req: Request) {
     }
 
     // ✅ Verify token
-    const decoded = jwt.verify(token, jwtSecret) as {
-      userId: string;
-      username: string;
-      email: string;
-    };
+    let decoded: unknown = null;
+
+try {
+  decoded = jwt.verify(token, jwtSecret);
+} catch (err: unknown) {
+  if (err instanceof Error) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
+  }
+}
+
+// Type narrowing
+if (typeof decoded === "object" && decoded !== null && "userId" in decoded) {
+  const userId = (decoded as { userId: string }).userId;
+  console.log("👤 User ID:", userId);
+} else {
+  return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
+}
 
     // ✅ Find user in DB
     const user = await User.findById(decoded.userId).select("-password");
@@ -43,8 +57,12 @@ export async function GET(req: Request) {
         username: user.username,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
     console.error("Auth check error:", error.message);
-    return NextResponse.json({ success: false, user: null }, { status: 401 });
+  } else {
+    console.error("Auth check error:", error);
+  }
+  return NextResponse.json({ success: false, user: null }, { status: 401 });
   }
 }

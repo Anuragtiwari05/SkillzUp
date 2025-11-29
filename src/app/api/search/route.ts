@@ -49,11 +49,13 @@ export async function POST(req: NextRequest) {
     console.log("✅ Got data from n8n:", data);
 
     return NextResponse.json(data, { status: 200, headers: corsHeaders });
-  } catch (err: any) {
-    console.error("🔥 API Error:", err.message || err);
-    return NextResponse.json(
-      { success: false, message: "Internal Server Error", error: err.message },
-      { status: 500, headers: corsHeaders }
-    );
+  }  catch (err: unknown) {
+  if (err instanceof Error) {
+    console.error(err.message);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } else {
+    console.error(err);
+    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
   }
+}
 }

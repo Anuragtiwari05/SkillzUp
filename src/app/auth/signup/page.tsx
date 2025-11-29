@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/component/navbar';
-import Footer from '@/component/footer';
+
 
 export default function SignupPage() {
   const [name, setName] = useState('');

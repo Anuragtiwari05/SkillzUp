@@ -4,9 +4,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Search, Newspaper, ArrowLeft, ExternalLink } from "lucide-react";
 
+// Properly typed Article
+type Article = {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  url: string;
+  source?: {
+    name: string;
+    url?: string;
+  };
+};
+
 export default function ArticlesFeaturePage() {
   const [query, setQuery] = useState("");
-  const [articles, setArticles] = useState<any[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -24,12 +37,26 @@ export default function ArticlesFeaturePage() {
       if (!res.ok) throw new Error("Failed to fetch articles");
 
       const data = await res.json();
+
       if (data.items && Array.isArray(data.items)) {
-        setArticles(data.items);
+        // Map items to match Article type
+        const formatted: Article[] = data.items.map((item: any) => ({
+          id: item.id || item._id || Math.random().toString(),
+          title: item.title || "No title",
+          description: item.description || item.content || "No description",
+          image: item.image || item.urlToImage || "",
+          url: item.url || "#",
+          source: item.source
+            ? typeof item.source === "string"
+              ? { name: item.source }
+              : { name: item.source.name || "Unknown", url: item.source.url }
+            : { name: "Unknown" },
+        }));
+        setArticles(formatted);
       } else {
         setError("No articles found for this search.");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -38,12 +65,9 @@ export default function ArticlesFeaturePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100">
-      
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur border-b border-green-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-16">
-
-          {/* Back + Logo */}
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.push("/")}
@@ -62,7 +86,6 @@ export default function ArticlesFeaturePage() {
               <span className="text-2xl font-bold text-green-900">SkillzUp</span>
             </div>
           </div>
-
         </div>
       </nav>
 
@@ -101,7 +124,6 @@ export default function ArticlesFeaturePage() {
 
       {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto px-6 py-16">
-        
         {/* Loading */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-32 text-center">
@@ -140,9 +162,9 @@ export default function ArticlesFeaturePage() {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {articles.map((art, idx) => (
+              {articles.map((art) => (
                 <a
-                  key={idx}
+                  key={art.id}
                   href={art.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -183,7 +205,6 @@ export default function ArticlesFeaturePage() {
             </div>
           </div>
         )}
-
       </main>
 
       {/* Footer */}
