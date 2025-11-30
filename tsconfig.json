@@ -15,12 +15,12 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "baseUrl": "src",
-    "paths": {
-  "@/*": ["*"],                       // general alias for all of src
-  "component/*": ["component/*"],     // singular 'component' folder
-  "components/*": ["components/*"],   // plural 'components' folder
-  "aicomponents/*": ["aicomponents/*"] // ai components
-},
+   "paths": {
+      "@/*": ["*"],
+      "component/*": ["component/*"],
+      "components/*": ["components/*"],
+      "aicomponents/*": ["aicomponents/*"]
+    },
     "noImplicitAny": false  // 👈 Allow 'any' temporarily
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
