@@ -16,10 +16,11 @@
     "plugins": [{ "name": "next" }],
     "baseUrl": "src",
     "paths": {
-      "@/*": ["*"],
-      "aicomponents/*": ["aicomponents/*"],
-      "components/*": ["components/*"]
-    },
+  "@/*": ["*"],                       // general alias for all of src
+  "component/*": ["component/*"],     // singular 'component' folder
+  "components/*": ["components/*"],   // plural 'components' folder
+  "aicomponents/*": ["aicomponents/*"] // ai components
+},
     "noImplicitAny": false  // 👈 Allow 'any' temporarily
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
