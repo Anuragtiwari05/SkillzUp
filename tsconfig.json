@@ -15,11 +15,11 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "baseUrl": "src",
-   "paths": {
-  "@/*": ["*"],           // general alias for anything in src
-  "@component/*": ["component/*"]
-},
-    "noImplicitAny": false  // 👈 Allow 'any' temporarily
+    "paths": {
+      "@/*": ["*"],               // General alias for src
+      "component/*": ["component/*"]  // Your single component folder
+    },
+    "noImplicitAny": false
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
