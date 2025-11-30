@@ -13,7 +13,7 @@ import {
   ArrowRight,
   MessageCircle,
 } from "lucide-react";
-import { YoutubeIcon } from "lucide-react";
+import { Youtube } from "lucide-react";
 
 import Navbar from "@/component/navbar";
 import Footer from "@/component/footer";
@@ -39,7 +39,7 @@ export default function HomePage() {
       link: "/features/roadmap",
     },
     {
-      icon: YoutubeIcon,
+      icon: Youtube,
       title: "Best Channels",
       desc: "Curated video content from top educators",
       color: "bg-red-100",
