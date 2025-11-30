@@ -4,13 +4,13 @@ import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/navigation";
 import FloatingChatButton from "../component/FloatingChatButton";
-import Subscription from "../component/Subscription";
+import Subscription from "../component/newSubscription";
 import {
   Map,
   FileText,
   TrendingUp,
   Sparkles,
-  ArrowRight,
+  
   MessageCircle,
 } from "lucide-react";
 import { Youtube } from "lucide-react";
