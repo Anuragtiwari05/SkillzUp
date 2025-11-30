@@ -16,11 +16,9 @@
     "plugins": [{ "name": "next" }],
     "baseUrl": "src",
    "paths": {
-      "@/*": ["*"],
-      "component/*": ["component/*"],
-      "components/*": ["components/*"],
-      "aicomponents/*": ["aicomponents/*"]
-    },
+  "@/*": ["*"],           // general alias for anything in src
+  "@component/*": ["component/*"]
+},
     "noImplicitAny": false  // 👈 Allow 'any' temporarily
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
