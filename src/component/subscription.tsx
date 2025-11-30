@@ -41,7 +41,7 @@ const subscriptionPlans: Plan[] = [
   },
 ];
 
-export default function SubscriptionPage() {
+export default function Subscription() {
   const router = useRouter();
 
   // Type-safe handleBuyNow function
