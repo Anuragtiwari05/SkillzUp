@@ -1,36 +1,193 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+🌟 SkillzUp — AI-Powered Personalized Learning Platform
+🔗 Live Application:
 
-## Getting Started
+https://skillz-8xhsvga25-anurags-projects-8619b329.vercel.app
 
-First, run the development server:
+SkillzUp is a modern AI-driven learning platform designed to help users discover the right skills, generate personalized learning roadmaps, explore curated resources from the web, and interact with a built-in AI assistant. It also includes subscription management, platform integrations, and workflow automation using n8n — all built with a clean, scalable architecture.
 
-```bash
+🚀 Core Features
+🧠 AI Learning Assistant
+
+Built using Gemini 1.5 Flash
+
+Interactive chat system with:
+
+Persistent chat sessions
+
+Sidebar chat history
+
+Delete & manage conversations
+
+Generates:
+
+Learning paths
+
+Skill roadmaps
+
+Course recommendations
+
+Explanations & guidance
+
+🎓 Courses From the Web
+
+Centralized access to high-quality resources from multiple platforms:
+
+Udemy
+
+Coursera
+
+LinkedIn Learning
+
+YouTube
+
+Medium
+
+Google Classroom
+
+And more…
+
+The user receives curated learning material for any topic directly inside SkillzUp.
+
+🤖 n8n Workflow Automation
+
+Background data processing
+
+Search aggregation
+
+HTTP integrations
+
+Automations for scalability
+
+Connected to SkillzUp via secured webhooks
+
+💳 Razorpay Subscription System
+
+Subscription plan creation
+
+Order generation
+
+Payment verification
+
+Success & failure pages
+
+Full test mode integration
+
+Secure API routes for backend validation
+
+🔐 Authentication & User System
+
+Login / Signup
+
+Secure session handling (cookies)
+
+Protected dashboard
+
+User-specific content
+
+Logout & session management
+
+📊 Personalized Dashboard
+
+Shows generated roadmaps
+
+Saved courses & learning progress
+
+Access to external learning platforms
+
+Quick access to chatbot and tools
+
+Platform link cards (LinkedIn, GitHub, YouTube, ChatGPT, etc.)
+
+🖥️ Modern & Clean UI
+
+Built with Next.js App Router
+
+Fully responsive
+
+Component-driven architecture
+
+Smooth animations
+
+Floating chat button
+
+Professional layout and spacing
+
+🛠️ Tech Stack
+Layer	Technologies
+Frontend	Next.js (App Directory), React, Tailwind CSS
+AI	Gemini API
+Automation	n8n
+Payments	Razorpay
+Backend	Next.js API Routes
+Database	MongoDB + Mongoose Models
+Deployment	Vercel
+Version Control	GitHub
+📦 Project Structure (High-Level)
+src/
+│
+├── app/
+│   ├── api/
+│   ├── chat/
+│   ├── dashboard/
+│   ├── features/
+│   └── page.tsx
+│
+├── components/
+│   ├── Subscription.tsx
+│   ├── FloatingChatButton.tsx
+│   └── UI elements...
+│
+├── models/
+│   ├── User.ts
+│   └── Subscription.ts
+│
+├── utils/
+├── context/
+└── public/
+
+🔧 Environment Variables
+
+Create .env.local and add:
+
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+
+GEMINI_API_KEY=
+
+N8N_WEBHOOK_URL=
+
+MONGODB_URI=
+NEXTAUTH_SECRET=
+
+🏗️ Installation & Setup
+git clone <repository-url>
+cd skillzup
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+🚀 Deployment (Vercel)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Push to GitHub
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Import repository into Vercel
 
-## Learn More
+Add all environment variables
 
-To learn more about Next.js, take a look at the following resources:
+Deploy instantly
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🎯 Why SkillzUp?
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+SkillzUp focuses on solving the most common learning challenges:
 
-## Deploy on Vercel
+“What should I learn next?”
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+“Which course is worth taking?”
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+“How do I build a roadmap?”
+
+“What’s the best resource for this topic?”
+
+With AI assistance, curated course aggregation, subscriptions, and a modern interface — SkillzUp becomes a complete personalized learning ecosystem.
+
+🌐 Live Demo
+👉 https://skillz-8xhsvga25-anurags-projects-8619b329.vercel.app
