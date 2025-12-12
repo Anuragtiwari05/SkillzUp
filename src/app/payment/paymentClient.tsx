@@ -73,20 +73,23 @@ export default function PaymentClient() {
 
   if (!plan)
     return (
-      <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">
+      <div className="min-h-screen flex items-center justify-center px-6 text-xl text-gray-600 text-center">
         Invalid plan selected.
       </div>
     );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
-      <h1 className="text-4xl font-extrabold text-black mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 py-20 text-center">
+      <h1 className="text-3xl sm:text-4xl font-extrabold text-black mb-4">
         Processing Your Payment...
       </h1>
-      <p className="text-gray-600 text-lg mb-6">
+
+      <p className="text-gray-700 text-base sm:text-lg max-w-md leading-relaxed">
         You are purchasing the{" "}
         <span className="font-bold text-blue-600">{plan.duration}</span>{" "}
-        subscription.
+        subscription.  
+        <br />
+        Please do not refresh the page.
       </p>
     </div>
   );

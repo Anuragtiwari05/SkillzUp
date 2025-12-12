@@ -44,6 +44,7 @@ export default function PaymentButton() {
       // 3️⃣ Load Razorpay script dynamically
       const razorpayScript = document.createElement("script");
       razorpayScript.src = "https://checkout.razorpay.com/v1/checkout.js";
+      razorpayScript.async = true;
       razorpayScript.onload = () => {
         // @ts-ignore
         const rzp = new window.Razorpay(options);
@@ -59,12 +60,14 @@ export default function PaymentButton() {
   };
 
   return (
-    <button
-      onClick={handlePayment}
-      disabled={loading}
-      className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition disabled:opacity-50"
-    >
-      {loading ? "Processing..." : "Pay ₹499"}
-    </button>
+    <div className="w-full flex justify-center px-4">
+      <button
+        onClick={handlePayment}
+        disabled={loading}
+        className="w-full max-w-xs sm:max-w-sm md:max-w-md px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition disabled:opacity-50 text-center font-bold text-lg"
+      >
+        {loading ? "Processing..." : "Pay ₹499"}
+      </button>
+    </div>
   );
 }
