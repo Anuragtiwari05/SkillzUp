@@ -1,8 +1,0 @@
-yourdomain.com {
-    reverse_proxy localhost:2005
-    encode gzip
-    log {
-        output file /var/log/caddy/access.log
-        format single_field common_log
-    }
-}

@@ -1,13 +1,22 @@
 'use client';
 
+export const dynamic = "force-dynamic";
+
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Navbar from '@/component/navbar';
+import Footer from '@/component/footer';
+import Button from '@/component/ui/Button';
+import Card from '@/component/ui/Card';
+import Reveal from '@/component/ui/Reveal';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +29,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (data.success) {
-        router.push('/');
+        router.push(redirect);
       } else {
         alert(data.message);
       }
@@ -32,62 +41,62 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
 
       <main className="flex-1 flex items-center justify-center py-12 sm:py-20 px-4">
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm sm:max-w-md p-8 sm:p-10">
-          
-          <h1 className="text-3xl sm:text-4xl font-black text-black mb-3 text-center">
-            Welcome Back
-          </h1>
+        <Reveal>
+          <Card hover={false} className="w-full max-w-sm sm:max-w-md p-8 sm:p-10">
+            <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 mb-3 text-center">
+              Welcome Back
+            </h1>
 
-          <p className="text-black font-semibold text-center mb-6 sm:mb-8 text-sm sm:text-base">
-            Log in to access your personalized roadmap
-          </p>
+            <p className="text-neutral-600 font-medium text-center mb-6 sm:mb-8 text-sm sm:text-base">
+              Log in to access your personalized roadmap
+            </p>
 
-          <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
+            <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
+              <input
+                type="text"
+                placeholder="Username or Email"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-neutral-200
+                           focus:border-primary-500 focus:outline-none font-medium
+                           text-sm sm:text-base transition-all duration-300 text-neutral-900"
+                required
+              />
 
-            <input
-              type="text"
-              placeholder="Username or Email"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-blue-300 
-                         focus:border-blue-500 focus:outline-none font-semibold 
-                         text-sm sm:text-base transition-all duration-300"
-              required
-            />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-neutral-200
+                           focus:border-primary-500 focus:outline-none font-medium
+                           text-sm sm:text-base transition-all duration-300 text-neutral-900"
+                required
+              />
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-blue-300 
-                         focus:border-blue-500 focus:outline-none font-semibold 
-                         text-sm sm:text-base transition-all duration-300"
-              required
-            />
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? 'Logging In...' : 'Login'}
+              </Button>
+            </form>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-full font-black 
-                         text-base sm:text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg"
-            >
-              {loading ? 'Logging In...' : 'Login'}
-            </button>
-          </form>
-
-          <p className="text-center text-black font-semibold mt-5 sm:mt-6 text-sm sm:text-base">
-            Don't have an account?{' '}
-            <a href="/auth/signup" className="text-blue-600 font-bold hover:underline">
-              Sign Up
-            </a>
-          </p>
-        </div>
+            <p className="text-center text-neutral-600 font-medium mt-5 sm:mt-6 text-sm sm:text-base">
+              Don&apos;t have an account?{' '}
+              <a
+                href={`/auth/signup?redirect=${encodeURIComponent(redirect)}`}
+                className="text-primary-700 font-bold hover:underline"
+              >
+                Sign Up
+              </a>
+            </p>
+          </Card>
+        </Reveal>
       </main>
 
+      <Footer />
     </div>
   );
 }

@@ -1,105 +1,63 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, Menu, X, Search } from "lucide-react";
+import { BookOpen, Menu, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
-interface NavbarProps {
-  onSearch?: (searchQuery: string) => void;
-}
-
-export default function Navbar({ onSearch }: NavbarProps) {
-  const [query, setQuery] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
+export default function Navbar() {
+  const { isLoggedIn, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("/api/auth/me", { method: "GET", credentials: "include" });
-        const data = await res.json();
-        setIsLoggedIn(data.success === true);
-      } catch {
-        setIsLoggedIn(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAuth();
-  }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    if (onSearch) onSearch(query.trim());
-    else router.push(`/search?topic=${encodeURIComponent(query.trim())}`);
-  };
 
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-      setIsLoggedIn(false);
       router.push("/auth/login");
+      router.refresh();
     } catch {}
   };
 
-  if (loading) return null;
+  if (loading) return <div className="h-16 bg-surface border-b border-surface-border" />;
 
   return (
-    <nav className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-sm">
+    <nav className="bg-surface/90 backdrop-blur-md border-b border-surface-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
           <div
-            className="flex items-center space-x-1 cursor-pointer flex-shrink-0"
+            className="flex items-center space-x-2 cursor-pointer flex-shrink-0"
             onClick={() => router.push("/")}
           >
-            <div className="bg-blue-600 p-1.5 rounded-md">
+            <div className="bg-primary-600 p-1.5 rounded-full">
               <BookOpen className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-black hidden sm:inline">SkillzUp</span>
-          </div>
-
-          {/* Search Bar */}
-          <div className="flex-1 mx-4 max-w-xl sm:max-w-2xl">
-            <form onSubmit={handleSearch} className="flex">
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-l-full border-2 border-blue-300 focus:border-blue-500 focus:outline-none text-black text-sm sm:text-base shadow-sm"
-              />
-              <button
-                type="submit"
-                className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-r-full hover:bg-blue-700 transition-all duration-300 flex items-center text-sm sm:text-base"
-              >
-                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </form>
+            <span className="text-lg font-heading font-bold text-neutral-900 hidden sm:inline">SkillzUp</span>
           </div>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
-            <Link href="/" className="text-black hover:text-blue-600 font-medium">Home</Link>
-            <Link href="/about" className="text-black hover:text-blue-600 font-medium">About</Link>
-            <Link href="/contact" className="text-black hover:text-blue-600 font-medium">Contact</Link>
+          <div className="hidden md:flex items-center space-x-6 flex-shrink-0">
+            <Link href="/" className="text-neutral-700 hover:text-primary-600 font-semibold transition-colors">Home</Link>
+            <Link href="/roadmaps" className="text-neutral-700 hover:text-primary-600 font-semibold transition-colors">Roadmaps</Link>
+            <Link href="/about" className="text-neutral-700 hover:text-primary-600 font-semibold transition-colors">About</Link>
+            <Link href="/contact" className="text-neutral-700 hover:text-primary-600 font-semibold transition-colors">Contact</Link>
+            {isLoggedIn && (
+              <Link href="/dashboard" className="text-neutral-700 hover:text-primary-600 font-semibold transition-colors">Dashboard</Link>
+            )}
 
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
-                className="bg-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-blue-700 transition-all duration-300 font-medium"
+                className="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-300 font-bold"
               >
                 Logout
               </button>
             ) : (
               <Link
                 href="/auth/login"
-                className="bg-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-blue-700 transition-all duration-300 font-medium"
+                className="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-300 font-bold"
               >
                 Login
               </Link>
@@ -110,7 +68,7 @@ export default function Navbar({ onSearch }: NavbarProps) {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="text-black p-2 rounded-md hover:bg-gray-100 transition-all duration-300"
+              className="text-neutral-900 p-2 rounded-md hover:bg-neutral-100 transition-all duration-300"
             >
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -119,22 +77,26 @@ export default function Navbar({ onSearch }: NavbarProps) {
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden mt-2 space-y-2 px-2">
-            <Link href="/" className="block text-black hover:text-blue-600 font-medium">Home</Link>
-            <Link href="/about" className="block text-black hover:text-blue-600 font-medium">About</Link>
-            <Link href="/contact" className="block text-black hover:text-blue-600 font-medium">Contact</Link>
+          <div className="md:hidden mt-2 pb-4 space-y-2 px-2">
+            <Link href="/" className="block text-neutral-700 hover:text-primary-600 font-semibold py-1">Home</Link>
+            <Link href="/roadmaps" className="block text-neutral-700 hover:text-primary-600 font-semibold py-1">Roadmaps</Link>
+            <Link href="/about" className="block text-neutral-700 hover:text-primary-600 font-semibold py-1">About</Link>
+            <Link href="/contact" className="block text-neutral-700 hover:text-primary-600 font-semibold py-1">Contact</Link>
+            {isLoggedIn && (
+              <Link href="/dashboard" className="block text-neutral-700 hover:text-primary-600 font-semibold py-1">Dashboard</Link>
+            )}
 
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
-                className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-all duration-300 font-medium w-full"
+                className="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-300 font-bold w-full mt-2"
               >
                 Logout
               </button>
             ) : (
               <Link
                 href="/auth/login"
-                className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-all duration-300 font-medium w-full"
+                className="block bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-300 font-bold w-full mt-2 text-center"
               >
                 Login
               </Link>

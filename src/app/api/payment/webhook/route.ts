@@ -4,6 +4,7 @@ import dbConnect from "@/utils/db";
 import Payment from "@/models/payment";
 import Subscription from "@/models/subsciption";
 import User from "@/models/User";
+import { getPlanByAmount } from "@/lib/plans";
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
@@ -59,13 +60,11 @@ export async function POST(req: Request) {
       await paymentRecord.save();
 
       const userId = paymentRecord.userId;
+      const isAnonymous = !userId || userId === "anonymous";
 
-      // 💥 FIXED PLAN MAPPING (correct prices)
-      let months = 0;
-
-      if (amount === 500) months = 6;      // ₹5 → 6 months
-      if (amount === 1000) months = 12;    // ₹10 → 12 months
-      if (amount === 1500) months = 15;    // ₹15 → 15 months
+      // 💥 PLAN MAPPING driven by the shared plans config (src/lib/plans.ts)
+      const matchedPlan = getPlanByAmount(amount / 100); // amount is in paise
+      const months = matchedPlan?.months ?? 0;
 
       if (months === 0) {
         console.log("❌ Invalid plan amount received:", amount);
@@ -75,28 +74,33 @@ export async function POST(req: Request) {
         );
       }
 
-      // Create subscription dates
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + months);
+      // For anonymous payments, we only record the payment; no user/subscription updates
+      if (!isAnonymous) {
+        // Create subscription dates
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + months);
 
-      // Save subscription
-      await Subscription.create({
-        userId,
-        amount: amount / 100, // convert paise → INR
-        startDate,
-        endDate,
-        status: "active",
-      });
+        // Save subscription
+        await Subscription.create({
+          userId,
+          amount: amount / 100, // convert paise → INR
+          startDate,
+          endDate,
+          status: "active",
+        });
 
-      // ⭐ Update user premium status
-      await User.findByIdAndUpdate(userId, {
-        isPremium: true,
-        plan: `${months}-months`,
-        expiresAt: endDate,
-      });
+        // ⭐ Update user premium status
+        await User.findByIdAndUpdate(userId, {
+          isPremium: true,
+          plan: `${months}-months`,
+          expiresAt: endDate,
+        });
 
-      console.log("🎉 Premium Activated for:", userId);
+        console.log("🎉 Premium Activated for:", userId);
+      } else {
+        console.log("ℹ️ Anonymous payment captured; skipping user premium/subscription update");
+      }
 
       return NextResponse.json({ success: true });
     }

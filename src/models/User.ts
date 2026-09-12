@@ -12,6 +12,9 @@ export interface IUser extends Document {
   isPremium: boolean;
   plan: string | null;
   expiresAt: Date | null;
+
+  // Preferences
+  themePreference: "light" | "dark" | "system";
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -52,6 +55,13 @@ const UserSchema: Schema<IUser> = new Schema({
   expiresAt: {
     type: Date,
     default: null,
+  },
+
+  // Theme preference (Settings page dark mode toggle)
+  themePreference: {
+    type: String,
+    enum: ["light", "dark", "system"],
+    default: "system",
   },
 });
 

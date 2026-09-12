@@ -49,6 +49,7 @@ export async function GET() {
         isPremium: user.isPremium,
         plan: user.plan,
         expiresAt: user.expiresAt,
+        themePreference: user.themePreference,
       },
     });
   } catch (err: unknown) {

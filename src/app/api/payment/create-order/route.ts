@@ -5,6 +5,7 @@ import razorpay from "@/lib/razorpayClient";
 import Payment from "@/models/payment";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { PLANS, PlanId } from "@/lib/plans";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -19,33 +20,31 @@ export async function POST(req: Request) {
     await dbConnect();
     console.log("✅ DB Connected");
 
-    // ---------- AUTH ----------
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-
-    console.log("🔍 Token received:", token ? "YES" : "NO");
-
-    if (!token) {
-      console.log("❌ No token → Unauthorized");
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    let decoded: any = null;
+    // ---------- OPTIONAL AUTH (does NOT block payment) ----------
+    let userId: string = "anonymous";
     try {
-      decoded = jwt.verify(token, JWT_SECRET);
-      console.log("✅ Token decoded:", decoded);
-    }catch (err: unknown) {
-  if (err instanceof Error) {
-    console.error(err.message);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
-  } else {
-    console.error(err);
-    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
-  }
-}
+      const cookieStore = await cookies();
+      const token = cookieStore.get("token")?.value;
 
-    const userId = decoded.userId;
-    console.log("👤 User ID:", userId);
+      console.log("🔍 Token received (optional):", token ? "YES" : "NO");
+
+      if (token) {
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string };
+        if (decoded && typeof decoded === "object" && "userId" in decoded && decoded.userId) {
+          userId = decoded.userId;
+        }
+        console.log("✅ Token decoded, using userId:", userId);
+      } else {
+        console.log("ℹ️ No token present, proceeding as anonymous user");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Non-fatal auth error in create-order:", err.message);
+      } else {
+        console.error("Non-fatal auth error in create-order:", err);
+      }
+      console.log("➡️ Proceeding with anonymous user for payment");
+    }
 
     // ---------- BODY ----------
     const body = await req.json();
@@ -55,17 +54,18 @@ export async function POST(req: Request) {
 
     let amountInRupees: number | undefined = undefined;
 
-    if (typeof amount === "number" && amount > 0) {
-      amountInRupees = amount;
-      console.log("💰 Amount (given directly):", amountInRupees);
-    } else if (planId) {
-      const planMap: Record<string, number> = {
-        plan6: 5,
-        plan12: 10,
-        plan15: 15,
-      };
-      amountInRupees = planMap[planId];
+    // Prefer planId mapping when provided (prevents mismatched client amounts)
+    const plan = planId ? PLANS[planId as PlanId] : undefined;
+    if (plan) {
+      amountInRupees = plan.price;
       console.log("💰 Amount (from plan):", amountInRupees, "Plan:", planId);
+    } else if (typeof amount === "number" && amount > 0) {
+      // Some clients send paise; accept both formats safely.
+      // Heuristic: for INR, values >= 1000 are almost certainly paise.
+      const normalized =
+        currency === "INR" && amount >= 1000 ? amount / 100 : amount;
+      amountInRupees = normalized;
+      console.log("💰 Amount (normalized):", amountInRupees, "Raw:", amount, "Currency:", currency);
     }
 
     if (!amountInRupees || amountInRupees <= 0) {

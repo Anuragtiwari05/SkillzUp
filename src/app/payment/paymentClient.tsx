@@ -4,21 +4,14 @@ export const dynamic = "force-dynamic";
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PLANS, PlanId } from "@/lib/plans";
 
 export default function PaymentClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planId = searchParams.get("plan");
 
-  console.log("🔍 Plan from URL:", planId);
-
-  const subscriptionPlans: Record<string, any> = {
-    plan6: { duration: "6 Months", price: 5, color: "yellow" },
-    plan12: { duration: "12 Months", price: 10, color: "green" },
-    plan15: { duration: "15 Months", price: 15, color: "blue" },
-  };
-
-  const plan = planId ? subscriptionPlans[planId] : null;
+  const plan = planId ? PLANS[planId as PlanId] : null;
 
   const loadRazorpay = () =>
     new Promise((resolve) => {
@@ -36,7 +29,7 @@ export default function PaymentClient() {
       const res = await fetch("/api/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, amount: plan.price * 100 }),
+        body: JSON.stringify({ planId }),
       });
 
       const data = await res.json();
@@ -52,7 +45,7 @@ export default function PaymentClient() {
         amount: order.amount,
         currency: order.currency,
         name: "SkillzUp Premium",
-        description: `${plan.duration} Subscription`,
+        description: `${plan.name} Subscription`,
         order_id: order.id,
         handler: function (response: any) {
           window.location.href = `/payment/success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&plan=${planId}`;
@@ -73,21 +66,23 @@ export default function PaymentClient() {
 
   if (!plan)
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 text-xl text-gray-600 text-center">
+      <div className="min-h-screen flex items-center justify-center px-6 text-xl text-neutral-600 text-center bg-background">
         Invalid plan selected.
       </div>
     );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 py-20 text-center">
-      <h1 className="text-3xl sm:text-4xl font-extrabold text-black mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 py-20 text-center">
+      <div className="w-12 h-12 rounded-full border-[3px] border-primary-200 border-t-primary-600 animate-spin mb-6" />
+
+      <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-neutral-900 mb-4">
         Processing Your Payment...
       </h1>
 
-      <p className="text-gray-700 text-base sm:text-lg max-w-md leading-relaxed">
+      <p className="text-neutral-600 text-base sm:text-lg max-w-md leading-relaxed">
         You are purchasing the{" "}
-        <span className="font-bold text-blue-600">{plan.duration}</span>{" "}
-        subscription.  
+        <span className="font-bold text-primary-700">{plan.name}</span>{" "}
+        (₹{plan.price}) subscription.
         <br />
         Please do not refresh the page.
       </p>

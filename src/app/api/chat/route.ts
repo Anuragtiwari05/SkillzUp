@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/utils/db";
 import ChatSession from "@/models/chatsession";
-import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import { cookies } from "next/headers";
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const JWT_SECRET = process.env.JWT_SECRET!;
-
+import { getUserId } from "@/lib/auth";
+import { bumpStreak, recordChatActivity } from "@/lib/activity";
+import { classifyAndMaybeReply } from "@/lib/chatIntent";
+import { parseSkillLevel, parseGoal, parseTimeAvailability } from "@/lib/onboardingParser";
+import { generateAndSaveRoadmap } from "@/lib/roadmapGenerator";
 
 // ---------------------------------------------
 // 🔥 SkillzUp Deep Knowledge (Injected every chat)
@@ -62,35 +61,64 @@ ${SKILLZUP_CONTEXT}
 `;
 
 // ---------------------------------------------
-// GET — fetch user chat sessions
+// GET — list the logged-in user's chat sessions (Chat History, Section 6)
 // ---------------------------------------------
 export async function GET() {
-  
   try {
     await dbConnect();
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
 
-    if (!token)
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Not logged in" }, { status: 401 });
+    }
 
-   const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-;
-    const sessions = await ChatSession.find({ userId: decoded.userId }).sort({ updatedAt: -1 });
+    const sessions = await ChatSession.find({ userId }).sort({ updatedAt: -1 });
 
     return NextResponse.json(sessions);
   } catch (err: unknown) {
-  if (err instanceof Error) {
-    console.error("GET Error:", err.message);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
-  } else {
-    console.error("GET Error:", err);
-    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
-  }}
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("GET /api/chat error:", message);
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
 }
 
+async function askGemini(userMessage: string): Promise<string> {
+  const finalPrompt = `${SYSTEM_PROMPT}\n\nUser: ${userMessage}`;
+
+  const geminiRes = await fetch(
+    `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+      }),
+    }
+  );
+
+  const geminiData = await geminiRes.json();
+
+  if (!geminiRes.ok) {
+    console.error("Gemini API error:", geminiRes.status, geminiData?.error?.message);
+    if (geminiRes.status === 429) {
+      return "Our AI assistant is at capacity right now (rate limit) — please try again in a minute.";
+    }
+  }
+
+  return (
+    geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
+    "Sorry, I'm having trouble thinking of a response right now — please try again in a moment."
+  );
+}
+
+const SKILL_LEVEL_QUESTION = "What's your current skill level with this — **Beginner**, **Intermediate**, or **Advanced**?";
+const GOAL_QUESTION = "Got it. What's your main goal — **get a job**, a **personal hobby**, or **pass an exam/certification**?";
+const TIME_QUESTION = "Last one — how much time can you commit per week? **Less than 2 hours**, **2-5 hours**, or **5+ hours**?";
+
 // ---------------------------------------------
-// POST — Chat with Gemini (REST API)
+// POST — Chat with Gemini; also runs the conversational roadmap-onboarding
+// flow (skill level → goal → time, then generates a saved roadmap) when the
+// message expresses intent to learn something.
 // ---------------------------------------------
 export async function POST(req: Request) {
   try {
@@ -100,14 +128,9 @@ export async function POST(req: Request) {
     if (!message)
       return NextResponse.json({ success: false, error: "Message required" }, { status: 400 });
 
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
-
-    if (!token)
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    const userId = decoded.userId;
+    // Anonymous users can still chat; their sessions just won't show up in Chat History.
+    const userId = (await getUserId()) || "anonymous";
+    const isLoggedIn = userId !== "anonymous";
 
     // Create or use session
     const activeSessionId = sessionId || uuidv4();
@@ -115,45 +138,107 @@ export async function POST(req: Request) {
     if (!session)
       session = new ChatSession({ userId, sessionId: activeSessionId, messages: [] });
 
-    // Save user message
     session.messages.push({ role: "user", content: message, timestamp: new Date() });
+    if (!session.title) {
+      session.title = message.slice(0, 60);
+    }
 
-    // Combine system + context + user message
-    const finalPrompt = `${SYSTEM_PROMPT}\n\nUser: ${message}`;
+    let aiReply: string;
 
-    // ⬇️ CALL GEMINI REST API (stable)
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
-        }),
+    try {
+      if (session.roadmapOnboarding) {
+        // --- Mid-onboarding: parse the answer for the current step ---
+        const { step, topic, answers } = session.roadmapOnboarding;
+
+        if (step === "skillLevel") {
+          const parsed = parseSkillLevel(message);
+          if (!parsed) {
+            aiReply = `Sorry, I didn't quite catch that — ${SKILL_LEVEL_QUESTION}`;
+          } else {
+            session.roadmapOnboarding.answers.skillLevel = parsed;
+            session.roadmapOnboarding.step = "goal";
+            aiReply = GOAL_QUESTION;
+          }
+        } else if (step === "goal") {
+          const parsed = parseGoal(message);
+          if (!parsed) {
+            aiReply = `Just want to make sure I get this right — ${GOAL_QUESTION}`;
+          } else {
+            session.roadmapOnboarding.answers.goal = parsed;
+            session.roadmapOnboarding.step = "time";
+            aiReply = TIME_QUESTION;
+          }
+        } else {
+          const parsed = parseTimeAvailability(message);
+          if (!parsed) {
+            aiReply = `Sorry, could you clarify that — ${TIME_QUESTION}`;
+          } else {
+            answers.timeAvailability = parsed;
+            const result = await generateAndSaveRoadmap({
+              userId,
+              topic,
+              skillLevel: answers.skillLevel!,
+              goal: answers.goal!,
+              timeAvailability: parsed,
+            });
+
+            if (result.success) {
+              session.title = `Learning ${result.topic} Roadmap`;
+              aiReply = `🎉 Your personalized **${result.topic}** roadmap is ready! I've saved it to your dashboard — [view it here](/dashboard/${result.roadmapId}).`;
+            } else {
+              aiReply = `Sorry, I hit a snag generating that roadmap (${result.error}). Want to try again?`;
+            }
+            session.roadmapOnboarding = null;
+          }
+        }
+      } else {
+        // --- No active onboarding: one Gemini call both classifies intent
+        // AND (if there's no learning intent) generates the normal reply —
+        // half the API calls of doing these as two separate requests.
+        const { intent, topic, reply } = await classifyAndMaybeReply(message, SYSTEM_PROMPT);
+
+        if (intent && topic) {
+          if (!isLoggedIn) {
+            aiReply = `I'd love to build a **${topic}** roadmap for you! First, please [log in](/auth/login?redirect=%2Fchat) (or sign up if you're new) so I can save it to your account — then just ask again.`;
+          } else {
+            session.roadmapOnboarding = { topic, step: "skillLevel", answers: {} };
+            aiReply = `Awesome, let's build you a **${topic}** roadmap. ${SKILL_LEVEL_QUESTION}`;
+          }
+        } else if (reply) {
+          aiReply = reply;
+        } else {
+          // Combined call came back without a usable reply (e.g. rate limit) — fall back once.
+          aiReply = await askGemini(message);
+        }
       }
-    );
+    } catch (flowErr: unknown) {
+      console.error("Chat onboarding/generation error:", flowErr);
+      aiReply = "Sorry, I hit an unexpected error there — mind trying that again in a moment?";
+      session.roadmapOnboarding = null;
+    }
 
-    const geminiData = await geminiRes.json();
-
-    const aiReply =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, I couldn't generate a response.";
-
-    // Save AI message
     session.messages.push({ role: "assistant", content: aiReply, timestamp: new Date() });
+    session.updatedAt = new Date();
     await session.save();
+
+    if (isLoggedIn) {
+      await Promise.all([
+        recordChatActivity(userId, activeSessionId, session.title || message.slice(0, 60)),
+        bumpStreak(userId),
+      ]);
+    }
 
     return NextResponse.json({
       success: true,
       reply: aiReply,
       sessionId: activeSessionId,
     });
-  }catch (err: unknown) {
-  if (err instanceof Error) {
-    console.error("GET Error:", err.message);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
-  } else {
-    console.error("GET Error:", err);
-    return NextResponse.json({ success: false, error: "Unknown error" }, { status: 500 });
-  }}
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("POST /api/chat error:", message);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong. Please try sending that again." },
+      { status: 500 }
+    );
+  }
 }

@@ -1,180 +1,325 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Search, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ArrowRight, LayoutDashboard, BookOpen, Clock } from "lucide-react";
+import Navbar from "@/component/navbar";
+import Footer from "@/component/footer";
+import BackButton from "@/component/ui/BackButton";
+import Loader from "@/component/ui/Loader";
+import Reveal from "@/component/ui/Reveal";
+import Button from "@/component/ui/Button";
+import Card from "@/component/ui/Card";
+import { useAuth } from "@/hooks/useAuth";
+
+type SkillLevel = "beginner" | "intermediate" | "advanced";
+type Goal = "job" | "hobby" | "exam";
+type TimeAvailability = "lt2" | "2to5" | "5plus";
+
+type Stage = {
+  title: string;
+  description: string;
+  estimatedTime?: string;
+  resources: { title: string; url: string; type?: string }[];
+};
+
+type RoadmapResult = {
+  roadmapId: string;
+  topic: string;
+  overview: string;
+  stages: Stage[];
+};
+
+const SKILL_LEVELS: { value: SkillLevel; label: string }[] = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+];
+
+const GOALS: { value: Goal; label: string }[] = [
+  { value: "job", label: "Get a job" },
+  { value: "hobby", label: "Personal hobby" },
+  { value: "exam", label: "Pass an exam / certification" },
+];
+
+const TIMES: { value: TimeAvailability; label: string }[] = [
+  { value: "lt2", label: "< 2 hrs / week" },
+  { value: "2to5", label: "2-5 hrs / week" },
+  { value: "5plus", label: "5+ hrs / week" },
+];
+
+function OptionCard({
+  selected,
+  label,
+  onClick,
+}: {
+  selected: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-2 py-2.5 sm:px-4 sm:py-3 rounded-xl border-2 font-semibold text-xs sm:text-base text-center leading-tight transition-colors ${
+        selected
+          ? "border-primary-600 bg-primary-50 text-primary-700"
+          : "border-neutral-200 bg-surface text-neutral-700 hover:border-primary-300"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
 
 export default function RoadmapPage() {
-  const [query, setQuery] = useState("");
-  const [roadmap, setRoadmap] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+  const { isLoggedIn, loading: authLoading } = useAuth();
 
-  useEffect(() => setIsClient(true), []);
+  const [step, setStep] = useState<"topic" | "quiz" | "result">("topic");
+  const [topic, setTopic] = useState("");
+  const [skillLevel, setSkillLevel] = useState<SkillLevel | null>(null);
+  const [goal, setGoal] = useState<Goal | null>(null);
+  const [timeAvailability, setTimeAvailability] = useState<TimeAvailability | null>(null);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    setLoading(true);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<RoadmapResult | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      router.push(`/auth/login?redirect=${encodeURIComponent("/features/roadmap")}`);
+    }
+  }, [authLoading, isLoggedIn, router]);
+
+  const handleGenerate = async () => {
+    if (!topic || !skillLevel || !goal) return;
+    setGenerating(true);
     setError("");
-    setRoadmap(null);
 
     try {
-      const res = await fetch(`/api/features/roadmap?q=${encodeURIComponent(query)}`);
-      if (!res.ok) throw new Error(await res.text());
+      const res = await fetch("/api/features/roadmap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, skillLevel, goal, timeAvailability }),
+      });
       const data = await res.json();
-      setRoadmap(data);
+
+      if (!res.ok || !data.success) {
+        setError(data.error || "Something went wrong. Please try again.");
+        setGenerating(false);
+        return;
+      }
+
+      setResult(data);
+      setStep("result");
     } catch (err) {
-      console.error("❌ Error fetching roadmap:", err);
+      console.error("Roadmap generation failed:", err);
       setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false);
+      setGenerating(false);
     }
   };
 
-  if (!isClient) return null;
+  const resetWizard = () => {
+    setStep("topic");
+    setTopic("");
+    setSkillLevel(null);
+    setGoal(null);
+    setTimeAvailability(null);
+    setResult(null);
+    setError("");
+  };
 
-  const roadmapArray = Array.isArray(roadmap?.roadmap) ? roadmap.roadmap : [];
+  if (authLoading || !isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader size="lg" label="Checking your session..." />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
 
-      {/* Navbar */}
-      <nav className="bg-white/80 backdrop-blur border-b border-blue-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center h-16">
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <button
-              onClick={() => router.push("/")}
-              className="p-1 sm:p-2 rounded-full hover:bg-blue-100 transition"
-            >
-              <ArrowLeft className="w-5 sm:w-6 h-5 sm:h-6 text-blue-700" />
-            </button>
-
-            <div className="flex items-center space-x-1 sm:space-x-2 cursor-pointer" onClick={() => router.push("/")}>
-              <div className="bg-blue-600 p-1 sm:p-2 rounded-lg hover:scale-105 transition">
-                <BookOpen className="w-5 sm:w-6 h-5 sm:h-6 text-white" />
-              </div>
-              <span className="text-lg sm:text-2xl font-bold text-blue-900">SkillzUp</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Search */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-16 text-center">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-blue-900 mb-4 sm:mb-6">
-          Generate Your Learning Roadmap
-        </h1>
-        <p className="text-base sm:text-lg text-blue-700 mb-8 sm:mb-10 font-medium">
-          Enter any skill or topic and get a beautifully structured roadmap.
-        </p>
-
-        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center bg-white shadow-lg hover:shadow-xl rounded-2xl border-2 border-blue-300 px-4 sm:px-6 py-3 sm:py-4 w-full mx-auto gap-2 sm:gap-3">
-          <input
-            type="text"
-            placeholder="Enter a topic... (e.g., React, AI, Web Dev)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 px-3 py-2 sm:py-2.5 outline-none text-blue-900 placeholder-blue-400 text-base sm:text-lg font-semibold rounded-lg sm:rounded-none w-full sm:w-auto"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-blue-700 transition text-sm sm:text-lg font-bold w-full sm:w-auto flex items-center justify-center gap-2"
-          >
-            <Search className="w-4 sm:w-5 h-4 sm:h-5" /> Generate
-          </button>
-        </form>
-      </div>
-
-      {/* Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <div className="w-12 sm:w-16 h-12 sm:h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-6"></div>
-            <p className="text-xl sm:text-2xl font-bold text-blue-700">Generating your personalized roadmap...</p>
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center py-32">
-            <p className="text-2xl font-bold text-red-600">{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && !roadmap && (
-          <div className="flex flex-col items-center justify-center py-40 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-blue-900 mb-2">Start your learning journey!</h2>
-            <p className="text-base sm:text-lg text-blue-700">
-              Use the search bar above to generate a curated roadmap.
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-16 w-full">
+        <BackButton className="mb-8" />
+        {step === "topic" && (
+          <Reveal className="text-center">
+            <p className="eyebrow text-primary-600 mb-3">Step 1 of 2</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-neutral-900 mb-6">
+              What do you want to learn?
+            </h1>
+            <p className="text-neutral-600 mb-8">
+              Tell us the skill or topic, and we'll ask two quick questions to build a roadmap that actually fits you.
             </p>
-          </div>
+
+            <Card hover={false} className="p-6 sm:p-8 max-w-xl mx-auto">
+              <input
+                type="text"
+                autoFocus
+                placeholder="e.g. React, Data Structures, UI Design..."
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && topic && setStep("quiz")}
+                className="w-full px-4 py-3 rounded-xl border-2 border-neutral-200 focus:border-primary-500 focus:outline-none text-neutral-900 text-base sm:text-lg font-medium mb-6"
+              />
+              <Button
+                disabled={!topic.trim()}
+                onClick={() => setStep("quiz")}
+                className="w-full"
+              >
+                Continue <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Card>
+          </Reveal>
         )}
 
-        {/* Roadmap */}
-        {!loading && roadmapArray.length > 0 && (
-          <div className="mt-10 space-y-8 sm:space-y-10">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-blue-900 mb-8 sm:mb-12">
-              🛣 Roadmap for "{roadmap.topic || query}"
-            </h2>
+        {step === "quiz" && (
+          <Reveal>
+            <p className="eyebrow text-primary-600 mb-3 text-center">Step 2 of 2</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold text-neutral-900 mb-8 text-center">
+              A couple quick questions
+            </h1>
 
-            {roadmapArray.map((stage: any, idx: number) => (
-              <div
-                key={idx}
-                className="relative bg-blue-50 p-4 sm:p-6 md:p-8 rounded-2xl shadow-md border border-blue-300 hover:shadow-xl transition"
-              >
-                <div className="absolute -left-4 sm:-left-5 top-6 w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                  {idx + 1}
+            <Card hover={false} className="p-6 sm:p-8 space-y-8">
+              <div>
+                <h3 className="font-heading font-bold text-neutral-900 mb-3">What's your current skill level?</h3>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  {SKILL_LEVELS.map((opt) => (
+                    <OptionCard
+                      key={opt.value}
+                      label={opt.label}
+                      selected={skillLevel === opt.value}
+                      onClick={() => setSkillLevel(opt.value)}
+                    />
+                  ))}
                 </div>
-
-                <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 flex items-center gap-2 text-blue-800">
-                  <CheckCircle2 className="w-5 sm:w-6 h-5 sm:h-6 text-blue-600" />
-                  {stage.stage}
-                </h3>
-
-                <p className="text-blue-900 mb-3 sm:mb-4 leading-relaxed text-base sm:text-lg">
-                  {stage.description}
-                </p>
-
-                {stage.resources?.length > 0 && (
-                  <div className="mb-3 sm:mb-4">
-                    <h4 className="text-base sm:text-lg font-semibold text-blue-900 mb-1 sm:mb-2">
-                      📚 Recommended Resources:
-                    </h4>
-                    <ul className="list-disc ml-5 sm:ml-6 space-y-1">
-                      {stage.resources.map((res: any, i: number) => (
-                        <li key={i}>
-                          <a
-                            href={res.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-700 hover:underline font-medium text-sm sm:text-base"
-                          >
-                            {res.title} ({res.type})
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {stage.estimated_time && (
-                  <p className="text-sm sm:text-base text-blue-700 mt-1 sm:mt-2">
-                    ⏱ Estimated Time: <span className="font-semibold">{stage.estimated_time}</span>
-                  </p>
-                )}
               </div>
+
+              <div>
+                <h3 className="font-heading font-bold text-neutral-900 mb-3">What's your goal?</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {GOALS.map((opt) => (
+                    <OptionCard
+                      key={opt.value}
+                      label={opt.label}
+                      selected={goal === opt.value}
+                      onClick={() => setGoal(opt.value)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-heading font-bold text-neutral-900 mb-3">
+                  Time availability <span className="text-neutral-600 font-normal">(optional)</span>
+                </h3>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  {TIMES.map((opt) => (
+                    <OptionCard
+                      key={opt.value}
+                      label={opt.label}
+                      selected={timeAvailability === opt.value}
+                      onClick={() =>
+                        setTimeAvailability(timeAvailability === opt.value ? null : opt.value)
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {error && <p className="text-red-600 font-medium text-sm text-center">{error}</p>}
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep("topic")} className="flex-1">
+                  Back
+                </Button>
+                <Button
+                  onClick={handleGenerate}
+                  disabled={!skillLevel || !goal || generating}
+                  className="flex-1"
+                >
+                  {generating ? "Generating..." : "Generate My Roadmap"}
+                </Button>
+              </div>
+            </Card>
+          </Reveal>
+        )}
+
+        {step === "result" && generating && <Loader size="lg" label="Building your personalized roadmap..." />}
+
+        {step === "result" && result && (
+          <div className="space-y-8 sm:space-y-10">
+            <Reveal className="text-center">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-neutral-900 mb-4">
+                Your Roadmap: {result.topic}
+              </h2>
+              {result.overview && (
+                <p className="text-neutral-600 max-w-2xl mx-auto mb-4">{result.overview}</p>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button onClick={() => router.push(`/dashboard/${result.roadmapId}`)}>
+                  <LayoutDashboard className="w-4 h-4" /> Track Progress in Dashboard
+                </Button>
+                <Button variant="outline" onClick={resetWizard}>
+                  Generate Another
+                </Button>
+              </div>
+            </Reveal>
+
+            {result.stages.map((stage, idx) => (
+              <Reveal key={idx} delay={Math.min(idx * 0.06, 0.3)}>
+                <Card hover={false} className="relative p-4 sm:p-6 md:p-8">
+                  <div className="absolute -left-4 sm:-left-5 top-6 w-8 h-8 sm:w-9 sm:h-9 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                    {idx + 1}
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-heading font-bold mb-2 sm:mb-3 flex items-center gap-2 text-neutral-900">
+                    <CheckCircle2 className="w-5 sm:w-6 h-5 sm:h-6 text-primary-600" />
+                    {stage.title}
+                  </h3>
+
+                  <p className="text-neutral-700 mb-3 sm:mb-4 leading-relaxed text-base sm:text-lg">
+                    {stage.description}
+                  </p>
+
+                  {stage.resources?.length > 0 && (
+                    <div className="mb-3 sm:mb-4">
+                      <h4 className="flex items-center gap-2 text-base sm:text-lg font-semibold text-neutral-900 mb-1 sm:mb-2">
+                        <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" /> Recommended Resources
+                      </h4>
+                      <ul className="list-disc ml-5 sm:ml-6 space-y-1">
+                        {stage.resources.map((res, i) => (
+                          <li key={i}>
+                            <a
+                              href={res.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary-700 hover:underline font-medium text-sm sm:text-base"
+                            >
+                              {res.title} {res.type ? `(${res.type})` : ""}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {stage.estimatedTime && (
+                    <p className="flex items-center gap-1.5 text-sm sm:text-base text-neutral-600 mt-1 sm:mt-2">
+                      <Clock className="w-4 h-4" /> Estimated Time: <span className="font-semibold">{stage.estimatedTime}</span>
+                    </p>
+                  )}
+                </Card>
+              </Reveal>
             ))}
           </div>
         )}
       </main>
 
-      <footer className="bg-blue-900 py-6 sm:py-8 mt-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-base sm:text-lg font-black text-white">© 2025 SkillzUp. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

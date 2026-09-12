@@ -38,23 +38,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // GET USER FROM COOKIES
+    // OPTIONAL USER FROM COOKIES (payment must succeed even for anonymous users)
     const cookieStore = await cookies();
     const userId = cookieStore.get("userId")?.value;
 
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: "User not logged in" },
-        { status: 401 }
-      );
+    if (userId) {
+      // UPDATE USER PREMIUM STATUS (only when we know the user)
+      await User.findByIdAndUpdate(userId, {
+        isPremium: true,
+        premiumPlan: planId ?? "default",
+        premiumActivatedAt: new Date(),
+      });
     }
-
-    // UPDATE USER PREMIUM STATUS
-    await User.findByIdAndUpdate(userId, {
-      isPremium: true,
-      premiumPlan: planId ?? "default",
-      premiumActivatedAt: new Date(),
-    });
 
     return NextResponse.json({
       success: true,

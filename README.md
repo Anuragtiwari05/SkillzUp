@@ -3,7 +3,7 @@
 
 https://skillz-8xhsvga25-anurags-projects-8619b329.vercel.app
 
-SkillzUp is a modern AI-driven learning platform designed to help users discover the right skills, generate personalized learning roadmaps, explore curated resources from the web, and interact with a built-in AI assistant. It also includes subscription management, platform integrations, and workflow automation using n8n — all built with a clean, scalable architecture.
+SkillzUp is a modern AI-driven learning platform designed to help users discover the right skills, generate personalized learning roadmaps, explore curated resources from the web, and interact with a built-in AI assistant. It also includes subscription management, platform integrations, and a clean, scalable architecture.
 
 🚀 Core Features
 🧠 AI Learning Assistant
@@ -47,18 +47,6 @@ Google Classroom
 And more…
 
 The user receives curated learning material for any topic directly inside SkillzUp.
-
-🤖 n8n Workflow Automation
-
-Background data processing
-
-Search aggregation
-
-HTTP integrations
-
-Automations for scalability
-
-Connected to SkillzUp via secured webhooks
 
 💳 Razorpay Subscription System
 
@@ -116,7 +104,6 @@ Professional layout and spacing
 Layer	Technologies
 Frontend	Next.js (App Directory), React, Tailwind CSS
 AI	Gemini API
-Automation	n8n
 Payments	Razorpay
 Backend	Next.js API Routes
 Database	MongoDB + Mongoose Models
@@ -154,10 +141,7 @@ RAZORPAY_KEY_SECRET=
 
 GEMINI_API_KEY=
 
-N8N_WEBHOOK_URL=
-
 MONGODB_URI=
-NEXTAUTH_SECRET=
 
 🏗️ Installation & Setup
 git clone <repository-url>

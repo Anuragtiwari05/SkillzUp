@@ -1,107 +1,115 @@
 'use client';
 
-import React from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-type Plan = {
-  id: string;
-  name: string;
-  duration: string;
-  price: number;
-  borderColor: string;
-  bgColor: string;
-};
-
-const subscriptionPlans: Plan[] = [
-  {
-    id: "plan6",
-    name: "6 Months",
-    duration: "6 Months",
-    price: 5,
-    borderColor: "border-yellow-400",
-    bgColor: "bg-yellow-100",
-  },
-  {
-    id: "plan12",
-    name: "12 Months",
-    duration: "12 Months",
-    price: 10,
-    borderColor: "border-green-400",
-    bgColor: "bg-green-100",
-  },
-  {
-    id: "plan15",
-    name: "15 Months",
-    duration: "15 Months",
-    price: 15,
-    borderColor: "border-blue-400",
-    bgColor: "bg-blue-100",
-  },
-];
+import { Check } from "lucide-react";
+import Card from "@/component/ui/Card";
+import Button from "@/component/ui/Button";
+import Reveal from "@/component/ui/Reveal";
+import { checkAuthNow } from "@/hooks/useAuth";
+import { PLAN_LIST, PAID_FEATURES, perMonthPrice, type Plan } from "@/lib/plans";
 
 export default function Subscription() {
   const router = useRouter();
+  const [checkingPlanId, setCheckingPlanId] = useState<string | null>(null);
 
   const handleBuyNow = async (plan: Plan) => {
+    setCheckingPlanId(plan.id);
     try {
-      const res = await fetch("/api/payment/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId: plan.id,
-          amount: plan.price * 100,
-        }),
-      });
+      const destination = `/payment?plan=${plan.id}`;
+      const isLoggedIn = await checkAuthNow();
 
-      const data = await res.json();
-
-      if (!data.order) {
-        alert("Failed to create order");
+      if (!isLoggedIn) {
+        router.push(`/auth/login?redirect=${encodeURIComponent(destination)}`);
         return;
       }
 
-      router.push(`/payment?order_id=${data.order.id}&plan=${plan.id}`);
+      router.push(destination);
     } catch (error) {
       console.error(error);
       alert("Something went wrong while creating order");
+    } finally {
+      setCheckingPlanId(null);
     }
   };
 
   return (
-    <div className="bg-gray-50 py-20 flex flex-col items-center px-4">
-      <h1 className="text-4xl md:text-5xl font-extrabold text-black mb-6 text-center">
-        Choose Your Subscription Plan
-      </h1>
-      <p className="text-gray-700 text-base md:text-lg max-w-2xl text-center mb-12">
-        Get full access to premium content and boost your learning journey.
-      </p>
+    <div className="py-16 sm:py-24 flex flex-col items-center px-4" id="pricing">
+      <Reveal className="text-center">
+        <p className="eyebrow text-primary-600 mb-3">Pricing</p>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-neutral-900 mb-4">
+          Choose Your Subscription Plan
+        </h2>
+        <p className="text-neutral-600 text-base md:text-lg max-w-2xl mx-auto mb-12">
+          Get full access to premium content and boost your learning journey.
+        </p>
+      </Reveal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
-        {subscriptionPlans.map((plan) => (
-          <div
-            key={plan.id}
-            className={`border-4 ${plan.borderColor} rounded-3xl shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center py-10 px-6 bg-white`}
-          >
-            <div
-              className={`w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-4 ${plan.bgColor}`}
-            >
-              <span className="text-2xl md:text-3xl font-bold text-black">₹{plan.price}</span>
-            </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl items-stretch">
+        {PLAN_LIST.map((plan, idx) => {
+          const isFeatured = Boolean(plan.badge);
+          const perMonth = perMonthPrice(plan);
 
-            <h3 className="text-xl md:text-2xl font-black mb-2">{plan.duration}</h3>
+          return (
+            <Reveal key={plan.id} delay={idx * 0.08} className="h-full">
+              <Card
+                hover
+                className={`relative flex flex-col h-full py-10 px-6 ${
+                  isFeatured
+                    ? "border-2 border-primary-500 shadow-[0_20px_40px_-16px_rgba(0,153,122,0.35)]"
+                    : ""
+                }`}
+              >
+                {plan.badge && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent-500 text-white text-xs font-bold uppercase tracking-wide px-4 py-1 rounded-full shadow-md">
+                    {plan.badge}
+                  </span>
+                )}
 
-            <p className="text-gray-700 font-semibold mb-6 text-center text-sm md:text-base">
-              Access all premium resources during this period
-            </p>
+                <div className="flex flex-col items-center text-center flex-1">
+                  <h3 className="text-lg md:text-xl font-heading font-bold text-neutral-900 mb-4">
+                    {plan.name}
+                  </h3>
 
-            <button
-              onClick={() => handleBuyNow(plan)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 transition text-sm md:text-base"
-            >
-              Buy Now
-            </button>
-          </div>
-        ))}
+                  <div className="mb-1">
+                    <span className="text-3xl md:text-4xl font-heading font-extrabold text-primary-700">
+                      ₹{plan.price}
+                    </span>
+                    <span className="text-neutral-600 font-medium text-sm"> / {plan.months === 1 ? "month" : `${plan.months} months`}</span>
+                  </div>
+
+                  <p className="text-neutral-600 text-sm mb-2">
+                    {plan.months === 1 ? "billed monthly" : `≈ ₹${perMonth} per month`}
+                  </p>
+
+                  {plan.savingsLabel && (
+                    <span className="inline-block bg-primary-50 text-primary-700 text-xs font-bold px-3 py-1 rounded-full mb-4">
+                      {plan.savingsLabel}
+                    </span>
+                  )}
+
+                  <ul className="text-left w-full space-y-2 mt-4 mb-8">
+                    {PAID_FEATURES.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm text-neutral-700">
+                        <Check className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Button
+                  variant="primary"
+                  onClick={() => handleBuyNow(plan)}
+                  disabled={checkingPlanId === plan.id}
+                  className="w-full mt-auto hover:!bg-accent-500"
+                >
+                  {checkingPlanId === plan.id ? "Checking..." : "Buy Now"}
+                </Button>
+              </Card>
+            </Reveal>
+          );
+        })}
       </div>
     </div>
   );
