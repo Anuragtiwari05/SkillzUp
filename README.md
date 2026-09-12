@@ -1,7 +1,7 @@
 🌟 SkillzUp — AI-Powered Personalized Learning Platform
 🔗 Live Application:
 
-https://skillz-8xhsvga25-anurags-projects-8619b329.vercel.app
+https://skillz-up.vercel.app/
 
 SkillzUp is a modern AI-driven learning platform designed to help users discover the right skills, generate personalized learning roadmaps, explore curated resources from the web, and interact with a built-in AI assistant. It also includes subscription management, platform integrations, and a clean, scalable architecture.
 
