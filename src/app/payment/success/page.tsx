@@ -1,7 +1,10 @@
+import { Suspense } from "react";
 import SuccessClient from "./successClient";
 
-export const dynamic = "force-dynamic";
-
 export default function Page() {
-  return <SuccessClient />;
+  return (
+    <Suspense fallback={null}>
+      <SuccessClient />
+    </Suspense>
+  );
 }

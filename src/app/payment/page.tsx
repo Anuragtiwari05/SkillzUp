@@ -1,7 +1,10 @@
+import { Suspense } from "react";
 import PaymentClient from "./paymentClient";
 
-export const dynamic = "force-dynamic";
-
 export default function Page() {
-  return <PaymentClient />;
+  return (
+    <Suspense fallback={null}>
+      <PaymentClient />
+    </Suspense>
+  );
 }
