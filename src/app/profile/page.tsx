@@ -50,16 +50,16 @@ export default function ProfilePage() {
         <div className="space-y-8">
           <Reveal>
             <Card hover={false} className="p-6 sm:p-8">
-              <h2 className="font-heading font-bold text-xl text-neutral-900 mb-4">{user.name}</h2>
+              <h2 className="font-heading font-bold text-xl text-foreground mb-4">{user.name}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                <div className="flex items-center gap-2 text-neutral-600">
-                  <Mail className="w-4 h-4 text-primary-600" /> {user.email}
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="w-4 h-4 text-link" /> {user.email}
                 </div>
-                <div className="flex items-center gap-2 text-neutral-600">
-                  <CreditCard className="w-4 h-4 text-primary-600" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CreditCard className="w-4 h-4 text-link" />
                   {user.isPremium ? `${user.plan ?? "Premium"} — active` : "No active subscription"}
                 </div>
-                <div className="flex items-center gap-2 font-bold text-accent-600">
+                <div className="flex items-center gap-2 font-bold text-accent-text">
                   <Flame className="w-4 h-4" /> {streak}-day streak
                 </div>
               </div>
@@ -67,10 +67,10 @@ export default function ProfilePage() {
           </Reveal>
 
           <Reveal delay={0.08}>
-            <h2 className="font-heading font-bold text-lg text-neutral-900 mb-4">Recent Activity</h2>
+            <h2 className="font-heading font-bold text-lg text-foreground mb-4">Recent Activity</h2>
             <div className="space-y-3">
               {!activity && (
-                <p className="text-neutral-600 text-sm">No activity yet — go generate a roadmap or chat with the AI.</p>
+                <p className="text-muted-foreground text-sm">No activity yet — go generate a roadmap or chat with the AI.</p>
               )}
 
               {activity?.lastRoadmap && (
@@ -79,12 +79,12 @@ export default function ProfilePage() {
                   className="p-5 flex items-center gap-4 cursor-pointer"
                   onClick={() => router.push(`/dashboard/${activity.lastRoadmap!.id}`)}
                 >
-                  <Map className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                  <Map className="w-5 h-5 text-link flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-semibold text-neutral-900 truncate">
+                    <p className="font-semibold text-foreground truncate">
                       Last roadmap: {activity.lastRoadmap.topic}
                     </p>
-                    <p className="text-xs text-neutral-600">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(activity.lastRoadmap.viewedAt).toLocaleString()}
                     </p>
                   </div>
@@ -94,12 +94,12 @@ export default function ProfilePage() {
               {activity?.lastFeatureView && (
                 <a href={activity.lastFeatureView.url} target="_blank" rel="noopener noreferrer" className="block">
                   <Card hover={false} className="p-5 flex items-center gap-4">
-                    <Youtube className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                    <Youtube className="w-5 h-5 text-link flex-shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-semibold text-neutral-900 truncate">
+                      <p className="font-semibold text-foreground truncate">
                         Last {activity.lastFeatureView.type}: {activity.lastFeatureView.title}
                       </p>
-                      <p className="text-xs text-neutral-600">
+                      <p className="text-xs text-muted-foreground">
                         {new Date(activity.lastFeatureView.viewedAt).toLocaleString()}
                       </p>
                     </div>
@@ -113,12 +113,12 @@ export default function ProfilePage() {
                   className="p-5 flex items-center gap-4 cursor-pointer"
                   onClick={() => router.push(`/chat?session=${activity.lastChatSession!.id}`)}
                 >
-                  <MessageSquare className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                  <MessageSquare className="w-5 h-5 text-link flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-semibold text-neutral-900 truncate">
+                    <p className="font-semibold text-foreground truncate">
                       Last chat: {activity.lastChatSession.title}
                     </p>
-                    <p className="text-xs text-neutral-600">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(activity.lastChatSession.viewedAt).toLocaleString()}
                     </p>
                   </div>

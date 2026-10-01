@@ -8,12 +8,14 @@ import BackButton from "@/component/ui/BackButton";
 import axios from "axios";
 import { Sparkles, SendHorizonal, Loader2, Menu } from "lucide-react";
 import { motion } from "framer-motion";
+import type { ChatResources } from "@/lib/resourceSearch";
 import { useSearchParams } from "next/navigation";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
   timestamp?: string;
+  resources?: ChatResources | null;
 };
 
 const MAX_TEXTAREA_HEIGHT = 160;
@@ -28,6 +30,7 @@ export default function ChatClient() {
   const [mobileSidebar, setMobileSidebar] = useState(false);
   const searchParams = useSearchParams();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Reopen a past conversation linked from Chat History (/chat?session=<id>)
   useEffect(() => {
@@ -50,7 +53,12 @@ export default function ChatClient() {
       .then((data) => {
         if (!cancelled && data.success) {
           setMessages(
-            data.messages.map((m: any) => ({ role: m.role, content: m.content, timestamp: m.timestamp }))
+            data.messages.map((m: any) => ({
+              role: m.role,
+              content: m.content,
+              timestamp: m.timestamp,
+              resources: m.resources ?? null,
+            }))
           );
           setCurrentTitle(data.title || null);
         }
@@ -99,11 +107,16 @@ export default function ChatClient() {
       });
 
       if (res.status === 200 && res.data?.success) {
-        const { reply, sessionId } = res.data;
+        const { reply, sessionId, resources } = res.data;
 
         if (!currentSessionId && sessionId) setCurrentSessionId(sessionId);
 
-        const botMsg: Message = { role: "assistant", content: reply, timestamp: new Date().toISOString() };
+        const botMsg: Message = {
+          role: "assistant",
+          content: reply,
+          timestamp: new Date().toISOString(),
+          resources: resources ?? null,
+        };
         setMessages((prev) => [...prev, botMsg]);
       } else {
         setMessages((prev) => [
@@ -143,22 +156,22 @@ export default function ChatClient() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-dvh flex flex-col overflow-hidden bg-background">
       <Navbar />
 
       {/* SUB-HEADER */}
-      <header className="flex justify-between items-center px-4 sm:px-6 py-4 bg-surface/90 backdrop-blur-xl sticky top-16 z-30 border-b border-surface-border">
+      <header className="flex justify-between items-center px-4 sm:px-6 py-4 bg-surface/90 backdrop-blur-xl flex-shrink-0 z-30 border-b border-border">
 
         {/* Left Section */}
         <div className="flex items-center space-x-3 min-w-0">
           <BackButton label="" className="flex-shrink-0" />
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-heading font-bold text-neutral-900 flex items-center gap-2">
-              <Sparkles className="w-5 sm:w-6 h-5 sm:h-6 text-accent-500 animate-pulse" />
+            <h1 className="text-xl sm:text-2xl font-heading font-bold text-foreground flex items-center gap-2">
+              <Sparkles className="w-5 sm:w-6 h-5 sm:h-6 text-accent-text animate-pulse" />
               SkillzUp AI Assistant
             </h1>
-            <p className="text-xs text-neutral-500 flex items-center gap-1.5 mt-0.5 truncate">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
               {currentTitle ? <span className="truncate">{currentTitle}</span> : "Online"}
             </p>
           </div>
@@ -167,13 +180,13 @@ export default function ChatClient() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileSidebar(true)}
-          className="md:hidden text-neutral-900 hover:text-primary-600 flex-shrink-0"
+          className="md:hidden text-foreground hover:text-link flex-shrink-0"
         >
           <Menu className="w-7 h-7" />
         </button>
       </header>
 
-      <main className="flex flex-1 overflow-hidden relative">
+      <main className="flex flex-1 min-h-0 overflow-hidden relative">
 
         {/* MOBILE SIDEBAR */}
         {mobileSidebar && (
@@ -186,7 +199,7 @@ export default function ChatClient() {
             <div className="p-4 flex justify-end">
               <button
                 onClick={() => setMobileSidebar(false)}
-                className="text-gray-600 hover:text-black font-bold text-lg"
+                className="text-muted-foreground hover:text-foreground font-bold text-lg"
               >
                 ✕
               </button>
@@ -205,7 +218,7 @@ export default function ChatClient() {
           initial={{ x: -40, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="hidden md:flex w-72 bg-surface/80 backdrop-blur-xl shadow-xl border-r border-surface-border"
+          className="hidden md:flex w-72 flex-shrink-0 min-h-0 bg-surface/80 backdrop-blur-xl border-r border-border"
         >
           <Sidebar
             currentSessionId={currentSessionId}
@@ -215,35 +228,40 @@ export default function ChatClient() {
         </motion.div>
 
         {/* CHAT WINDOW */}
-        <div className="flex-1 flex flex-col p-2 sm:p-4 min-w-0">
+        <div className="flex-1 flex flex-col p-2 sm:p-4 min-w-0 min-h-0">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="w-full flex-1 flex flex-col bg-surface rounded-2xl sm:rounded-3xl shadow-2xl border border-surface-border relative overflow-hidden"
+            className="w-full flex-1 min-h-0 flex flex-col bg-surface rounded-2xl sm:rounded-3xl shadow-2xl border border-border relative overflow-hidden"
           >
             {/* Soft background glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-100/40 via-surface to-accent-100/30 blur-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-surface to-accent/15 blur-3xl pointer-events-none" />
 
             {/* MESSAGES */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 z-10 flex flex-col">
+            <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 z-10 flex flex-col">
               {historyLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin text-primary-600 mx-auto mt-10" />
+                <Loader2 className="w-6 h-6 animate-spin text-link mx-auto mt-10" />
               ) : (
-                <ChatBox messages={messages} loading={loading} />
+                <ChatBox
+                  messages={messages}
+                  loading={loading}
+                  scrollRef={scrollRef}
+                  onSuggest={sendMessage}
+                />
               )}
             </div>
 
             {/* INPUT */}
-            <div className="p-3 sm:p-4 bg-surface/90 backdrop-blur-md border-t border-surface-border">
-              <div className="flex items-end gap-2 sm:gap-3 bg-primary-50 border border-primary-200 rounded-2xl px-4 py-2">
+            <div className="flex-shrink-0 p-3 sm:p-4 bg-surface/90 backdrop-blur-md border-t border-border z-10">
+              <div className="flex items-end gap-2 sm:gap-3 bg-primary/15 border border-primary rounded-2xl px-4 py-2">
                 <textarea
                   ref={textareaRef}
                   rows={1}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 bg-transparent outline-none text-primary-900 placeholder-primary-400/70 text-sm sm:text-base resize-none py-1.5 max-h-40 overflow-y-auto"
+                  className="flex-1 bg-transparent outline-none text-link placeholder:text-muted-foreground text-sm sm:text-base resize-none py-1.5 max-h-40 overflow-y-auto"
                   placeholder="Ask SkillzUp AI... (Shift+Enter for a new line)"
                 />
                 <button
@@ -251,8 +269,8 @@ export default function ChatClient() {
                   disabled={!message.trim() || loading}
                   className={`p-2 rounded-full transition flex-shrink-0 ${
                     message.trim() && !loading
-                      ? "bg-primary-600 text-white hover:bg-primary-700"
-                      : "bg-neutral-200 text-neutral-400"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/85"
+                      : "bg-border text-muted-foreground"
                   }`}
                 >
                   {loading ? (

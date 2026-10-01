@@ -44,18 +44,18 @@ export default function ChatHistoryPage() {
       {sessions !== null && sessions.length === 0 && (
         <Reveal>
           <Card hover={false} className="p-10 text-center">
-            <MessageSquare className="w-10 h-10 text-primary-500 mx-auto mb-4" />
-            <h2 className="font-heading font-bold text-xl text-neutral-900 mb-2">
+            <MessageSquare className="w-10 h-10 text-link mx-auto mb-4" />
+            <h2 className="font-heading font-bold text-xl text-foreground mb-2">
               No conversations yet
             </h2>
-            <p className="text-neutral-600">Start a chat with the AI assistant to see it here.</p>
+            <p className="text-muted-foreground">Start a chat with the AI assistant to see it here.</p>
           </Card>
         </Reveal>
       )}
 
       {groups.map((group, gIdx) => (
         <div key={group.label} className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wide text-neutral-600 mb-3">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">
             {group.label}
           </h2>
           <div className="space-y-3">

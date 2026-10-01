@@ -18,13 +18,13 @@ function RoadmapCard({ roadmap, delay }: { roadmap: RoadmapData; delay: number }
       <Link href={`/roadmaps/${roadmap.slug}`} className="h-full block">
         <Card className="p-5 h-full flex flex-col">
           <div className="flex items-center gap-3 mb-3">
-            <div className="bg-primary-50 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Icon className="w-5 h-5 text-primary-600" />
+            <div className="bg-primary/15 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Icon className="w-5 h-5 text-link" />
             </div>
-            <h3 className="font-heading font-bold text-neutral-900">{roadmap.title}</h3>
+            <h3 className="font-heading font-bold text-foreground">{roadmap.title}</h3>
           </div>
-          <p className="text-sm text-neutral-600 mb-4 flex-1">{roadmap.description}</p>
-          <span className="text-xs font-semibold text-neutral-500">{topicCount} topics</span>
+          <p className="text-sm text-muted-foreground mb-4 flex-1">{roadmap.description}</p>
+          <span className="text-xs font-semibold text-muted-foreground">{topicCount} topics</span>
         </Card>
       </Link>
     </Reveal>
@@ -39,19 +39,19 @@ export default function RoadmapsPage() {
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
           <Reveal className="text-center mb-16">
-            <p className="eyebrow text-primary-600 mb-3">Roadmaps</p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-neutral-900 mb-4">
+            <p className="eyebrow text-link mb-3">Roadmaps</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-foreground mb-4">
               Developer Roadmaps
             </h1>
-            <p className="text-neutral-600 max-w-2xl mx-auto">
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               Community-style roadmaps to guide your learning path — pick a role
               or a specific skill and see exactly what to learn, in order.
             </p>
           </Reveal>
 
           <Reveal className="mb-6">
-            <h2 className="text-lg font-heading font-bold text-neutral-900 flex items-center gap-2">
-              <span className="bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
+            <h2 className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
+              <span className="bg-primary/15 text-link text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
                 Role-based
               </span>
               Role-based Roadmaps
@@ -64,8 +64,8 @@ export default function RoadmapsPage() {
           </div>
 
           <Reveal className="mb-6">
-            <h2 className="text-lg font-heading font-bold text-neutral-900 flex items-center gap-2">
-              <span className="bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
+            <h2 className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
+              <span className="bg-primary/15 text-link text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
                 Skill-based
               </span>
               Skill-based Roadmaps

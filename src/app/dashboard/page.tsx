@@ -72,30 +72,30 @@ export default function DashboardPage() {
     <AppShell active="dashboard" title="Dashboard">
       {streak !== null && streak > 0 && (
         <Reveal className="mb-8">
-          <div className="inline-flex items-center gap-2 bg-accent-50 text-accent-600 font-bold px-4 py-2 rounded-full">
+          <div className="inline-flex items-center gap-2 bg-accent/15 text-accent-text font-bold px-4 py-2 rounded-full">
             <Flame className="w-5 h-5" /> {streak}-day streak
           </div>
         </Reveal>
       )}
 
       <section className="mb-12">
-        <h2 className="text-lg font-heading font-bold text-neutral-900 mb-4">Your Roadmaps</h2>
+        <h2 className="text-lg font-heading font-bold text-foreground mb-4">Your Roadmaps</h2>
 
         {roadmaps === null && <Loader size="lg" label="Loading your roadmaps..." />}
 
         {roadmaps !== null && roadmaps.length === 0 && (
           <Reveal>
             <Card hover={false} className="p-10 text-center">
-              <Map className="w-10 h-10 text-primary-500 mx-auto mb-4" />
-              <h3 className="font-heading font-bold text-xl text-neutral-900 mb-2">
+              <Map className="w-10 h-10 text-link mx-auto mb-4" />
+              <h3 className="font-heading font-bold text-xl text-foreground mb-2">
                 No roadmaps yet
               </h3>
-              <p className="text-neutral-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Generate your first personalized roadmap to see it here.
               </p>
               <Link
                 href="/features/roadmap"
-                className="inline-flex items-center justify-center rounded-xl px-6 py-3 font-bold bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center justify-center rounded-xl px-6 py-3 font-bold bg-primary text-primary-foreground hover:bg-primary/85 transition-colors"
               >
                 Create a Roadmap
               </Link>
@@ -109,24 +109,24 @@ export default function DashboardPage() {
               <Reveal key={r._id} delay={Math.min(idx * 0.06, 0.3)}>
                 <Link href={`/dashboard/${r._id}`}>
                   <Card className="p-6 h-full flex flex-col">
-                    <h3 className="font-heading font-bold text-lg text-neutral-900 mb-2">{r.topic}</h3>
+                    <h3 className="font-heading font-bold text-lg text-foreground mb-2">{r.topic}</h3>
                     <div className="flex gap-2 flex-wrap mb-4">
-                      <span className="text-xs font-bold uppercase tracking-wide bg-primary-50 text-primary-700 px-2.5 py-1 rounded-full">
+                      <span className="text-xs font-bold uppercase tracking-wide bg-primary/15 text-link px-2.5 py-1 rounded-full">
                         {r.skillLevel}
                       </span>
-                      <span className="text-xs font-bold uppercase tracking-wide bg-accent-50 text-accent-600 px-2.5 py-1 rounded-full">
+                      <span className="text-xs font-bold uppercase tracking-wide bg-accent/15 text-accent-text px-2.5 py-1 rounded-full">
                         {GOAL_LABEL[r.goal] ?? r.goal}
                       </span>
                     </div>
 
                     <div className="mt-auto">
-                      <div className="flex justify-between text-sm text-neutral-600 mb-1">
+                      <div className="flex justify-between text-sm text-muted-foreground mb-1">
                         <span>{r.stages.length} stages</span>
                         <span>{r.completionPercent}%</span>
                       </div>
-                      <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-surface-elevated rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary-600 rounded-full transition-all"
+                          className="h-full bg-primary rounded-full transition-all"
                           style={{ width: `${r.completionPercent}%` }}
                         />
                       </div>
@@ -140,23 +140,23 @@ export default function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-heading font-bold text-neutral-900 mb-4">Recent Conversations</h2>
+        <h2 className="text-lg font-heading font-bold text-foreground mb-4">Recent Conversations</h2>
 
         {sessions === null && <Loader size="lg" label="Loading your conversations..." />}
 
         {sessions !== null && sessions.length === 0 && (
           <Reveal>
             <Card hover={false} className="p-10 text-center">
-              <MessageSquare className="w-10 h-10 text-primary-500 mx-auto mb-4" />
-              <h3 className="font-heading font-bold text-xl text-neutral-900 mb-2">No conversations yet</h3>
-              <p className="text-neutral-600">Start a chat with the AI assistant to see it here.</p>
+              <MessageSquare className="w-10 h-10 text-link mx-auto mb-4" />
+              <h3 className="font-heading font-bold text-xl text-foreground mb-2">No conversations yet</h3>
+              <p className="text-muted-foreground">Start a chat with the AI assistant to see it here.</p>
             </Card>
           </Reveal>
         )}
 
         {sessionGroups.map((group, gIdx) => (
           <div key={group.label} className="mb-8">
-            <h3 className="text-xs font-bold uppercase tracking-wide text-neutral-600 mb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">
               {group.label}
             </h3>
             <div className="space-y-3">

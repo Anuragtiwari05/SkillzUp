@@ -58,13 +58,13 @@ function TopicNode({ data }: NodeProps<{ label: string; category: "core" | "opti
     <div
       className={`px-4 py-2.5 rounded-xl text-sm font-semibold text-center min-w-[160px] transition-transform hover:scale-[1.03] cursor-pointer ${
         isCore
-          ? "bg-primary-600 text-white shadow-[0_8px_20px_-8px_rgba(47,111,237,0.5)]"
-          : "bg-surface text-primary-700 border-2 border-dashed border-primary-300"
+          ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
+          : "bg-surface text-link border-2 border-dashed border-primary"
       }`}
     >
-      <Handle type="target" position={Position.Top} className="!bg-primary-400 !border-0" />
+      <Handle type="target" position={Position.Top} className="!bg-primary/85 !border-0" />
       {data.label}
-      <Handle type="source" position={Position.Bottom} className="!bg-primary-400 !border-0" />
+      <Handle type="source" position={Position.Bottom} className="!bg-primary/85 !border-0" />
     </div>
   );
 }
@@ -97,7 +97,7 @@ export default function RoadmapFlow({ nodes: treeNodes }: { nodes: RoadmapNode[]
         target: item.node.id,
         animated: item.node.category === "optional",
         style: {
-          stroke: item.node.category === "optional" ? "#8fb6ff" : "#2f6fed",
+          stroke: item.node.category === "optional" ? "var(--muted-foreground)" : "var(--link)",
           strokeDasharray: item.node.category === "optional" ? "5 5" : undefined,
           strokeWidth: 2,
         },
@@ -116,7 +116,7 @@ export default function RoadmapFlow({ nodes: treeNodes }: { nodes: RoadmapNode[]
 
   return (
     <div className="relative">
-      <div className="h-[480px] sm:h-[560px] rounded-2xl overflow-hidden border border-surface-border bg-neutral-50">
+      <div className="h-[480px] sm:h-[560px] rounded-2xl overflow-hidden border border-border bg-surface-elevated">
         <ReactFlow
           nodes={flowNodes}
           edges={flowEdges}
@@ -127,9 +127,9 @@ export default function RoadmapFlow({ nodes: treeNodes }: { nodes: RoadmapNode[]
           proOptions={{ hideAttribution: true }}
           minZoom={0.2}
         >
-          <Background color="#e2ddd0" gap={20} />
-          <Controls className="!bg-surface !border-surface-border !shadow-[var(--shadow-card)] [&_button]:!border-surface-border [&_button]:!text-neutral-700" />
-          <MiniMap className="!bg-surface" maskColor="rgba(253,251,247,0.7)" nodeColor="#2f6fed" />
+          <Background color="var(--border)" gap={20} />
+          <Controls className="!bg-surface !border-border !shadow-[var(--shadow-card)] [&_button]:!border-border [&_button]:!bg-surface [&_button]:!text-foreground [&_button_svg]:!fill-current" />
+          <MiniMap className="!bg-surface" maskColor="var(--scrim)" nodeColor="var(--primary)" />
         </ReactFlow>
       </div>
 
@@ -141,19 +141,19 @@ export default function RoadmapFlow({ nodes: treeNodes }: { nodes: RoadmapNode[]
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelected(null)}
-              className="fixed inset-0 bg-black/50 z-40"
+              className="fixed inset-0 bg-scrim z-40"
             />
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.25 }}
-              className="fixed top-0 right-0 h-full w-full max-w-sm bg-surface border-l border-surface-border z-50 p-6 overflow-y-auto"
+              className="fixed top-0 right-0 h-full w-full max-w-sm bg-surface border-l border-border z-50 p-6 overflow-y-auto"
             >
               <button
                 onClick={() => setSelected(null)}
                 aria-label="Close"
-                className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-900"
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -161,19 +161,19 @@ export default function RoadmapFlow({ nodes: treeNodes }: { nodes: RoadmapNode[]
               <span
                 className={`inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4 ${
                   selected.category === "core"
-                    ? "bg-primary-50 text-primary-700"
-                    : "bg-transparent border border-dashed border-primary-300 text-primary-700"
+                    ? "bg-primary/15 text-link"
+                    : "bg-transparent border border-dashed border-primary text-link"
                 }`}
               >
                 {selected.category === "core" ? "Core Topic" : "Optional"}
               </span>
 
-              <h3 className="text-xl font-heading font-bold text-neutral-900 mb-3">{selected.title}</h3>
-              <p className="text-neutral-600 leading-relaxed mb-6">{selected.description}</p>
+              <h3 className="text-xl font-heading font-bold text-foreground mb-3">{selected.title}</h3>
+              <p className="text-muted-foreground leading-relaxed mb-6">{selected.description}</p>
 
               {selected.resources && selected.resources.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-bold text-neutral-700 mb-2">Resources</h4>
+                  <h4 className="text-sm font-bold text-muted-foreground mb-2">Resources</h4>
                   <ul className="space-y-2">
                     {selected.resources.map((res) => (
                       <li key={res.url}>
@@ -181,7 +181,7 @@ export default function RoadmapFlow({ nodes: treeNodes }: { nodes: RoadmapNode[]
                           href={res.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-primary-700 hover:text-primary-800"
+                          className="flex items-center gap-2 text-sm text-link hover:text-link"
                         >
                           <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                           {res.title}

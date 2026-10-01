@@ -14,12 +14,12 @@ export default function Loader({
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-6">
       <motion.span
-        className={`${dimensions} rounded-full border-[3px] border-primary-200 border-t-primary-600`}
+        className={`${dimensions} rounded-full border-[3px] border-primary border-t-primary-600`}
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
       />
       {label && (
-        <p className="text-sm font-semibold text-neutral-600">{label}</p>
+        <p className="text-sm font-semibold text-muted-foreground">{label}</p>
       )}
     </div>
   );

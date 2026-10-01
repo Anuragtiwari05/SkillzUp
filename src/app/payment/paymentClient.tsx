@@ -64,22 +64,22 @@ export default function PaymentClient() {
 
   if (!plan)
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 text-xl text-neutral-600 text-center bg-background">
+      <div className="min-h-screen flex items-center justify-center px-6 text-xl text-muted-foreground text-center bg-background">
         Invalid plan selected.
       </div>
     );
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6 py-20 text-center">
-      <div className="w-12 h-12 rounded-full border-[3px] border-primary-200 border-t-primary-600 animate-spin mb-6" />
+      <div className="w-12 h-12 rounded-full border-[3px] border-primary border-t-primary-600 animate-spin mb-6" />
 
-      <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-neutral-900 mb-4">
+      <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-foreground mb-4">
         Processing Your Payment...
       </h1>
 
-      <p className="text-neutral-600 text-base sm:text-lg max-w-md leading-relaxed">
+      <p className="text-muted-foreground text-base sm:text-lg max-w-md leading-relaxed">
         You are purchasing the{" "}
-        <span className="font-bold text-primary-700">{plan.name}</span>{" "}
+        <span className="font-bold text-link">{plan.name}</span>{" "}
         (₹{plan.price}) subscription.
         <br />
         Please do not refresh the page.

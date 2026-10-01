@@ -4,6 +4,7 @@ export interface IMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  resources?: unknown; // videos / articles / news cards attached to an assistant reply
 }
 
 export interface IRoadmapOnboardingAnswers {
@@ -32,6 +33,7 @@ const MessageSchema = new Schema<IMessage>({
   role: { type: String, enum: ["user", "assistant"], required: true },
   content: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
+  resources: { type: Schema.Types.Mixed },
 });
 
 const RoadmapOnboardingSchema = new Schema<IRoadmapOnboarding>(

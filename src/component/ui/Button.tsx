@@ -7,11 +7,11 @@ type Variant = "primary" | "secondary" | "outline";
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-primary-600 text-white hover:bg-primary-700 shadow-[0_10px_24px_-8px_rgba(47,111,237,0.55)]",
+    "bg-primary text-primary-foreground hover:bg-primary/85 shadow-[var(--shadow-glow)]",
   secondary:
-    "bg-accent-500 text-white hover:bg-accent-600 shadow-[0_10px_24px_-8px_rgba(249,115,22,0.5)]",
+    "bg-accent text-accent-foreground hover:bg-accent/85",
   outline:
-    "bg-transparent text-neutral-900 border-2 border-neutral-200 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-800",
+    "bg-transparent text-foreground border-2 border-border hover:border-primary hover:bg-primary/10",
 };
 
 interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {

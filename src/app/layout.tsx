@@ -1,17 +1,20 @@
-import type { Metadata } from "next";
-import { Inter, Sora } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
+import MotionProvider from "@/component/motion/MotionProvider";
 
 const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const sora = Sora({
+const display = Bricolage_Grotesque({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -30,16 +33,12 @@ export const metadata: Metadata = {
   },
 };
 
-// Runs before hydration so the correct theme paints immediately (no flash).
-const THEME_INIT_SCRIPT = `
-(function () {
-  try {
-    var pref = localStorage.getItem('themePreference') || 'system';
-    var isDark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  } catch (e) {}
-})();
-`;
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafaf7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0d12" },
+  ],
+};
 
 export default function RootLayout({
   children,
@@ -48,9 +47,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${sora.variable} antialiased`}>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className={`${inter.variable} ${display.variable} antialiased`}>
+        <ThemeProvider>
+          <MotionProvider>{children}</MotionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

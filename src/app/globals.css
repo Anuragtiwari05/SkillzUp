@@ -1,136 +1,219 @@
 @import "tailwindcss";
 
+/* next-themes toggles the `.dark` class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ */
+/* Design tokens                                                       */
+/* Light: warm off-white, near-black text.  Dark: deep ink, soft white. */
+/* Signature accent = blue (primary). Secondary = sky blue. */
+/* ------------------------------------------------------------------ */
 :root {
-  --background: #fdfbf7;
-  --foreground: #0b0b0b;
+  --background: #ffffff;
   --surface: #ffffff;
-  --surface-border: #ece7dc;
+  --surface-elevated: #f1f5fc;
+  --foreground: #12141a;
+  --muted-foreground: #556070;
+  --border: #dde4f0;
 
-  /* Brand palette — inspired by brilliant.org: warm cream background, near-black
-     text, one confident electric-blue accent for CTAs/highlights, plus pastel
-     tints used to alternate homepage "chapters". */
-  --color-ink: #0b0b0b;
-  --color-ink-soft: #161616;
+  --primary: #2563eb; /* fills (buttons, chips, highlights) */
+  --primary-foreground: #ffffff;
+  --link: #1d4ed8; /* lime used as TEXT / icon on light bg */
+  --accent: #38bdf8; /* secondary: sky blue */
+  --accent-foreground: #12141a;
+  --accent-text: #0369a1; /* coral used as TEXT on light bg */
+  --ring: #2563eb;
 
-  --color-primary-50: #eef4ff;
-  --color-primary-100: #dbe7ff;
-  --color-primary-200: #bad2ff;
-  --color-primary-300: #8fb6ff;
-  --color-primary-400: #5b93fb;
-  --color-primary-500: #3b78f6;
-  --color-primary-600: #2f6fed;
-  --color-primary-700: #2554c0;
-  --color-primary-800: #1e4396;
-  --color-primary-900: #1a3878;
+  --success: #17692f;
+  --danger: #b42318;
+  --danger-foreground: #ffffff;
+  --scrim: rgba(18, 20, 26, 0.55);
 
-  --color-accent-50: #fff7ed;
-  --color-accent-100: #ffedd5;
-  --color-accent-200: #fed7aa;
-  --color-accent-300: #fdba74;
-  --color-accent-400: #fb923c;
-  --color-accent-500: #f97316;
-  --color-accent-600: #ea580c;
-
-  --color-neutral-50: #fdfbf7;
-  --color-neutral-100: #f5f1e8;
-  --color-neutral-200: #e8e2d4;
-  --color-neutral-300: #ddd7c8;
-  --color-neutral-400: #a39c8c;
-  --color-neutral-500: #78716c;
-  --color-neutral-600: #57534e;
-  --color-neutral-800: #262421;
-  --color-neutral-900: #0b0b0b;
-
-  --tint-blue: #eaf2ff;
-  --tint-peach: #fff1e6;
-  --tint-green: #eaf7ee;
-
-  --shadow-card: 0 14px 34px -14px rgba(11, 11, 11, 0.16);
+  --shadow-card: 0 1px 0 rgba(18, 20, 26, 0.04), 0 14px 34px -16px rgba(18, 20, 26, 0.22);
+  --shadow-glow: 0 0 0 1px rgba(37, 99, 235, 0.3), 0 8px 26px -8px rgba(37, 99, 235, 0.55);
   --radius-card: 1.5rem;
+  --grain-opacity: 0.05;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #0b0d12;
+  --surface: #12151c;
+  --surface-elevated: #1a1e27;
+  --foreground: #edeef2;
+  --muted-foreground: #a3a8b6;
+  --border: #272c38;
+
+  --primary: #60a5fa;
+  --primary-foreground: #0b0d12;
+  --link: #8ab8ff;
+  --accent: #38bdf8;
+  --accent-foreground: #0b0d12;
+  --accent-text: #7dd3fc;
+  --ring: #60a5fa;
+
+  --success: #6ee7a0;
+  --danger: #ff8a80;
+  --danger-foreground: #0b0d12;
+  --scrim: rgba(0, 0, 0, 0.65);
+
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px -18px rgba(0, 0, 0, 0.75);
+  --shadow-glow: 0 0 0 1px rgba(96, 165, 250, 0.4), 0 8px 30px -8px rgba(96, 165, 250, 0.45);
+  --grain-opacity: 0.07;
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --color-surface: var(--surface);
-  --color-surface-border: var(--surface-border);
-
-  --color-ink: var(--color-ink);
-  --color-ink-soft: var(--color-ink-soft);
-
-  --color-primary-50: var(--color-primary-50);
-  --color-primary-100: var(--color-primary-100);
-  --color-primary-200: var(--color-primary-200);
-  --color-primary-300: var(--color-primary-300);
-  --color-primary-400: var(--color-primary-400);
-  --color-primary-500: var(--color-primary-500);
-  --color-primary-600: var(--color-primary-600);
-  --color-primary-700: var(--color-primary-700);
-  --color-primary-800: var(--color-primary-800);
-  --color-primary-900: var(--color-primary-900);
-
-  --color-accent-50: var(--color-accent-50);
-  --color-accent-100: var(--color-accent-100);
-  --color-accent-200: var(--color-accent-200);
-  --color-accent-300: var(--color-accent-300);
-  --color-accent-400: var(--color-accent-400);
-  --color-accent-500: var(--color-accent-500);
-  --color-accent-600: var(--color-accent-600);
-
-  --color-neutral-50: var(--color-neutral-50);
-  --color-neutral-100: var(--color-neutral-100);
-  --color-neutral-200: var(--color-neutral-200);
-  --color-neutral-300: var(--color-neutral-300);
-  --color-neutral-400: var(--color-neutral-400);
-  --color-neutral-500: var(--color-neutral-500);
-  --color-neutral-600: var(--color-neutral-600);
-  --color-neutral-800: var(--color-neutral-800);
-  --color-neutral-900: var(--color-neutral-900);
-
-  --color-tint-blue: var(--tint-blue);
-  --color-tint-peach: var(--tint-peach);
-  --color-tint-green: var(--tint-green);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-link: var(--link);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-text: var(--accent-text);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-scrim: var(--scrim);
 
   --font-sans: var(--font-body);
   --font-heading: var(--font-heading);
+
+  --animate-marquee: marquee 60s linear infinite;
+  --animate-spin-slow: spin 6s linear infinite;
+  @keyframes marquee {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading), var(--font-body), sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 .eyebrow {
   font-family: var(--font-heading), sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   font-size: 0.75rem;
   font-weight: 700;
 }
 
-/* Dark mode — toggled via data-theme="dark" on <html> (see ThemeProvider).
-   Because most of the UI is already built on these CSS variables (bg-background,
-   bg-surface, text-neutral-*), redefining them here covers the site without
-   needing a `dark:` utility class on every element. */
-[data-theme="dark"] {
-  --background: #0e0e0f;
-  --foreground: #f3f1ea;
-  --surface: #18181a;
-  --surface-border: #2a2a2c;
+/* Subtle film grain, drawn once as a static SVG data-URI (no animation). */
+.grain {
+  position: relative;
+  isolation: isolate;
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+  border-radius: inherit;
+}
+.dark .grain::after {
+  mix-blend-mode: screen;
+}
 
-  --color-neutral-50: #18181a;
-  --color-neutral-100: #202022;
-  --color-neutral-200: #2a2a2c;
-  --color-neutral-300: #35342f;
-  --color-neutral-400: #8a8579;
-  --color-neutral-500: #b6b0a2;
-  --color-neutral-600: #a3a19b;
-  --color-neutral-800: #ded9cc;
-  --color-neutral-900: #f3f1ea;
+/* Outlined display type for the big marquee band */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--foreground);
+}
+
+/* Marquee that pauses on hover / focus */
+.marquee-pause:hover .animate-marquee,
+.marquee-pause:focus-within .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme-toggle view transition: only the clip-path reveal animates.   */
+/* ------------------------------------------------------------------ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* Short cross-fade fallback (no View Transitions / reduced motion) */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    fill 0.25s ease,
+    stroke 0.25s ease !important;
+}
+
+/* Code blocks / markdown (chat) adapt to theme */
+pre,
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-marquee,
+  .animate-spin-slow {
+    animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
 }

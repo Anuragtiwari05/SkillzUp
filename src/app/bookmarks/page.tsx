@@ -45,9 +45,9 @@ export default function BookmarksPage() {
       {bookmarks !== null && bookmarks.length === 0 && (
         <Reveal>
           <Card hover={false} className="p-10 text-center">
-            <BookmarkIcon className="w-10 h-10 text-primary-500 mx-auto mb-4" />
-            <h2 className="font-heading font-bold text-xl text-neutral-900 mb-2">No bookmarks yet</h2>
-            <p className="text-neutral-600">
+            <BookmarkIcon className="w-10 h-10 text-link mx-auto mb-4" />
+            <h2 className="font-heading font-bold text-xl text-foreground mb-2">No bookmarks yet</h2>
+            <p className="text-muted-foreground">
               Save videos, articles, and news from the feature pages to see them here.
             </p>
           </Card>
@@ -62,8 +62,8 @@ export default function BookmarksPage() {
 
           return (
             <div key={group.type} className="mb-10">
-              <h2 className="flex items-center gap-2 font-heading font-bold text-lg text-neutral-900 mb-4">
-                <group.icon className="w-5 h-5 text-primary-600" /> {group.label}
+              <h2 className="flex items-center gap-2 font-heading font-bold text-lg text-foreground mb-4">
+                <group.icon className="w-5 h-5 text-link" /> {group.label}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {items.map((item, idx) => (
@@ -81,7 +81,7 @@ export default function BookmarksPage() {
                           href={item.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-semibold text-sm text-neutral-900 line-clamp-2 hover:text-primary-700"
+                          className="font-semibold text-sm text-foreground line-clamp-2 hover:text-link"
                         >
                           {item.title}
                         </a>
@@ -89,7 +89,7 @@ export default function BookmarksPage() {
                       <button
                         onClick={() => remove(item._id)}
                         aria-label="Remove bookmark"
-                        className="flex-shrink-0 text-neutral-400 hover:text-red-500 transition-colors"
+                        className="flex-shrink-0 text-muted-foreground hover:text-danger transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

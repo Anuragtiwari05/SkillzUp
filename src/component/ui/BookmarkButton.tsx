@@ -63,12 +63,12 @@ export default function BookmarkButton({
       onClick={handleClick}
       disabled={busy}
       aria-label={saved ? "Remove bookmark" : "Save bookmark"}
-      className={`p-2 rounded-full bg-white/90 backdrop-blur shadow-md hover:scale-110 transition-transform ${className}`}
+      className={`p-2 rounded-full bg-surface/90 text-foreground border border-border backdrop-blur shadow-md hover:scale-110 transition-transform ${className}`}
     >
       {saved ? (
-        <BookmarkCheck className="w-4 h-4 text-primary-600" />
+        <BookmarkCheck className="w-4 h-4 text-link" />
       ) : (
-        <Bookmark className="w-4 h-4 text-neutral-700" />
+        <Bookmark className="w-4 h-4 text-muted-foreground" />
       )}
     </button>
   );

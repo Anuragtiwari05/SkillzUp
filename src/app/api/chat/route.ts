@@ -7,6 +7,10 @@ import { bumpStreak, recordChatActivity } from "@/lib/activity";
 import { classifyAndMaybeReply } from "@/lib/chatIntent";
 import { parseSkillLevel, parseGoal, parseTimeAvailability } from "@/lib/onboardingParser";
 import { generateAndSaveRoadmap } from "@/lib/roadmapGenerator";
+import { detectResourceRequest, fetchResources, type ChatResources } from "@/lib/resourceSearch";
+
+// Allow slower Gemini calls on Vercel (default is 10s on Hobby).
+export const maxDuration = 60;
 
 // ---------------------------------------------
 // 🔥 SkillzUp Deep Knowledge (Injected every chat)
@@ -143,10 +147,41 @@ export async function POST(req: Request) {
       session.title = message.slice(0, 60);
     }
 
-    let aiReply: string;
+    let aiReply = "";
+    let resources: ChatResources | undefined;
 
     try {
-      if (session.roadmapOnboarding) {
+      // Videos / articles / news requests work any time, even in the middle of roadmap onboarding
+      // ("no, I want videos" cancels the roadmap questions and answers the real request).
+      const resourceReq = detectResourceRequest(message);
+      let handledResource = false;
+
+      if (resourceReq) {
+        const lastTopic = [...session.messages]
+          .reverse()
+          .find((m: { resources?: ChatResources }) => m.resources?.topic)?.resources?.topic;
+        const topic = resourceReq.topic || session.roadmapOnboarding?.topic || lastTopic || "";
+
+        if (!topic) {
+          aiReply = "Happy to! What topic should I look up? For example: *React*, *Python* or *system design*.";
+          handledResource = true;
+        } else {
+          const found = await fetchResources(resourceReq.types, topic);
+          session.roadmapOnboarding = null;
+          handledResource = true;
+          if (found.groups.length === 0) {
+            aiReply = `I couldn't pull up results for **${topic}** just now. Try rephrasing the topic, or browse the [Videos](/features/yt), [Articles](/features/article) and [News](/features/news) pages.`;
+          } else {
+            resources = found;
+            const labels = found.groups.map((g) => (g.type === "video" ? "videos" : g.type === "article" ? "articles" : "news"));
+            aiReply = `Here are the top ${labels.join(", ")} for **${topic}**. Want a step-by-step **${topic} roadmap** too? Just say so.`;
+          }
+        }
+      }
+
+      if (handledResource) {
+        // reply already set above
+      } else if (session.roadmapOnboarding) {
         // --- Mid-onboarding: parse the answer for the current step ---
         const { step, topic, answers } = session.roadmapOnboarding;
 
@@ -202,7 +237,9 @@ export async function POST(req: Request) {
             aiReply = `I'd love to build a **${topic}** roadmap for you! First, please [log in](/auth/login?redirect=%2Fchat) (or sign up if you're new) so I can save it to your account — then just ask again.`;
           } else {
             session.roadmapOnboarding = { topic, step: "skillLevel", answers: {} };
-            aiReply = `Awesome, let's build you a **${topic}** roadmap. ${SKILL_LEVEL_QUESTION}`;
+            aiReply = `Awesome, let's build you a **${topic}** roadmap. ${SKILL_LEVEL_QUESTION}
+
+*Tip: you can also ask me for ${topic} videos, articles or news any time.*`;
           }
         } else if (reply) {
           aiReply = reply;
@@ -217,7 +254,7 @@ export async function POST(req: Request) {
       session.roadmapOnboarding = null;
     }
 
-    session.messages.push({ role: "assistant", content: aiReply, timestamp: new Date() });
+    session.messages.push({ role: "assistant", content: aiReply, timestamp: new Date(), ...(resources ? { resources } : {}) });
     session.updatedAt = new Date();
     await session.save();
 
@@ -231,6 +268,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       reply: aiReply,
+      resources: resources ?? null,
       sessionId: activeSessionId,
     });
   } catch (err: unknown) {

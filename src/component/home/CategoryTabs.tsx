@@ -57,10 +57,10 @@ export default function CategoryTabs() {
           <button
             key={cat.label}
             onClick={() => setActive(idx)}
-            className={`px-4 sm:px-5 py-2.5 rounded-full font-bold text-sm sm:text-base transition-colors ${
+            className={`px-4 sm:px-5 py-2.5 rounded-full font-bold text-sm sm:text-base transition-all hover:-translate-y-0.5 ${
               active === idx
-                ? "bg-primary-600 text-white"
-                : "bg-surface border border-surface-border text-neutral-700 hover:border-primary-300"
+                ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
+                : "bg-surface border border-border text-foreground hover:border-primary"
             }`}
           >
             {cat.label}
@@ -81,10 +81,10 @@ export default function CategoryTabs() {
             <Link
               key={topic.title}
               href={topic.href}
-              className="group flex items-center justify-between gap-2 bg-surface border border-surface-border rounded-2xl px-4 py-3 font-semibold text-sm text-neutral-800 hover:border-primary-400 hover:text-primary-700 transition-colors"
+              className="group flex items-center justify-between gap-2 bg-surface border border-border rounded-2xl px-4 py-3.5 font-semibold text-sm text-foreground shadow-[var(--shadow-card)] hover:-translate-y-1 hover:border-primary transition-all"
             >
               {topic.title}
-              <ArrowUpRight className="w-4 h-4 text-neutral-400 group-hover:text-primary-600 transition-colors flex-shrink-0" />
+              <ArrowUpRight className="w-4 h-4 text-muted-foreground group-hover:text-link transition-colors flex-shrink-0" />
             </Link>
           ))}
         </motion.div>

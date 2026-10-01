@@ -47,11 +47,11 @@ export default function SignupClient() {
       <main className="flex-1 flex items-center justify-center py-12 sm:py-20 px-4">
         <Reveal>
           <Card hover={false} className="w-full max-w-sm sm:max-w-md p-8 sm:p-10">
-            <h1 className="text-3xl sm:text-4xl font-black text-neutral-900 mb-3 sm:mb-4 text-center">
+            <h1 className="text-3xl sm:text-4xl font-black text-foreground mb-3 sm:mb-4 text-center">
               Create Your Account
             </h1>
 
-            <p className="text-neutral-600 font-medium text-center mb-6 sm:mb-8 text-sm sm:text-base">
+            <p className="text-muted-foreground font-medium text-center mb-6 sm:mb-8 text-sm sm:text-base">
               Join SkillzUp and start your learning journey
             </p>
 
@@ -61,9 +61,9 @@ export default function SignupClient() {
                 placeholder="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-neutral-200
-                           focus:border-primary-500 focus:outline-none font-medium
-                           text-sm sm:text-base transition-all duration-300 text-neutral-900"
+                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-border
+                           focus:border-primary focus:outline-none font-medium
+                           text-sm sm:text-base transition-all duration-300 text-foreground"
                 required
               />
 
@@ -72,9 +72,9 @@ export default function SignupClient() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-neutral-200
-                           focus:border-primary-500 focus:outline-none font-medium
-                           text-sm sm:text-base transition-all duration-300 text-neutral-900"
+                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-border
+                           focus:border-primary focus:outline-none font-medium
+                           text-sm sm:text-base transition-all duration-300 text-foreground"
                 required
               />
 
@@ -83,9 +83,9 @@ export default function SignupClient() {
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-neutral-200
-                           focus:border-primary-500 focus:outline-none font-medium
-                           text-sm sm:text-base transition-all duration-300 text-neutral-900"
+                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-border
+                           focus:border-primary focus:outline-none font-medium
+                           text-sm sm:text-base transition-all duration-300 text-foreground"
                 required
               />
 
@@ -94,9 +94,9 @@ export default function SignupClient() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-neutral-200
-                           focus:border-primary-500 focus:outline-none font-medium
-                           text-sm sm:text-base transition-all duration-300 text-neutral-900"
+                className="w-full px-4 sm:px-5 py-3 rounded-full border-2 border-border
+                           focus:border-primary focus:outline-none font-medium
+                           text-sm sm:text-base transition-all duration-300 text-foreground"
                 required
               />
 
@@ -105,11 +105,11 @@ export default function SignupClient() {
               </Button>
             </form>
 
-            <p className="text-center text-neutral-600 font-medium mt-5 sm:mt-6 text-sm sm:text-base">
+            <p className="text-center text-muted-foreground font-medium mt-5 sm:mt-6 text-sm sm:text-base">
               Already have an account?{' '}
               <a
                 href={`/auth/login?redirect=${encodeURIComponent(redirect)}`}
-                className="text-primary-700 font-bold hover:underline"
+                className="text-link font-bold hover:underline"
               >
                 Login
               </a>

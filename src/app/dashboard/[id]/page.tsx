@@ -71,12 +71,12 @@ export default function RoadmapDetailPage() {
           <Reveal>
             <Card hover={false} className="p-6">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-semibold text-neutral-600">Overall progress</span>
-                <span className="text-sm font-bold text-primary-700">{roadmap.completionPercent}%</span>
+                <span className="text-sm font-semibold text-muted-foreground">Overall progress</span>
+                <span className="text-sm font-bold text-link">{roadmap.completionPercent}%</span>
               </div>
-              <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-surface-elevated rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary-600 rounded-full transition-all"
+                  className="h-full bg-primary rounded-full transition-all"
                   style={{ width: `${roadmap.completionPercent}%` }}
                 />
               </div>
@@ -96,21 +96,21 @@ export default function RoadmapDetailPage() {
                   aria-label={stage.completed ? "Mark incomplete" : "Mark complete"}
                 >
                   {stage.completed ? (
-                    <CheckCircle2 className="w-6 h-6 text-primary-600" />
+                    <CheckCircle2 className="w-6 h-6 text-link" />
                   ) : (
-                    <Circle className="w-6 h-6 text-neutral-300" />
+                    <Circle className="w-6 h-6 text-muted-foreground" />
                   )}
                 </button>
 
                 <div className="flex-1">
                   <h3
-                    className={`font-heading font-bold text-lg text-neutral-900 mb-1 ${
+                    className={`font-heading font-bold text-lg text-foreground mb-1 ${
                       stage.completed ? "line-through" : ""
                     }`}
                   >
                     {idx + 1}. {stage.title}
                   </h3>
-                  <p className="text-neutral-600 text-sm sm:text-base mb-2">{stage.description}</p>
+                  <p className="text-muted-foreground text-sm sm:text-base mb-2">{stage.description}</p>
 
                   {stage.resources?.length > 0 && (
                     <ul className="list-disc ml-5 space-y-1">
@@ -120,7 +120,7 @@ export default function RoadmapDetailPage() {
                             href={res.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary-700 hover:underline text-sm font-medium"
+                            className="text-link hover:underline text-sm font-medium"
                           >
                             {res.title}
                           </a>
@@ -130,7 +130,7 @@ export default function RoadmapDetailPage() {
                   )}
 
                   {stage.estimatedTime && (
-                    <p className="flex items-center gap-1.5 text-xs text-neutral-600 mt-2">
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
                       <Clock className="w-3.5 h-3.5" /> {stage.estimatedTime}
                     </p>
                   )}

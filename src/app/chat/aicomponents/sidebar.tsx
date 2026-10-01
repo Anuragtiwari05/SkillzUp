@@ -63,19 +63,19 @@ export default function Sidebar({ currentSessionId, onNewChat, onSelectChat }: S
       {/* New Chat Button */}
       <button
         onClick={onNewChat}
-        className="flex items-center justify-center gap-2 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-md transition-colors flex-shrink-0"
+        className="flex items-center justify-center gap-2 py-2 bg-primary hover:bg-primary/85 text-primary-foreground rounded-lg shadow-md transition-colors flex-shrink-0"
       >
         <Plus size={18} /> New Chat
       </button>
 
       {/* Search */}
       <div className="relative mt-3 flex-shrink-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search chats..."
-          className="w-full pl-9 pr-3 py-2 rounded-lg bg-neutral-100 text-sm text-neutral-900 placeholder-neutral-400 outline-none focus:ring-2 focus:ring-primary-300"
+          className="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-elevated text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -84,13 +84,13 @@ export default function Sidebar({ currentSessionId, onNewChat, onSelectChat }: S
         {loading ? (
           <Loader size="sm" label="Loading chats..." />
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-neutral-600 px-1">
+          <p className="text-sm text-muted-foreground px-1">
             {query ? "No chats match your search" : "No chats yet"}
           </p>
         ) : (
           groups.map((group) => (
             <div key={group.label}>
-              <p className="text-xs font-bold uppercase tracking-wide text-neutral-500 px-1 mb-1.5">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground px-1 mb-1.5">
                 {group.label}
               </p>
               <div className="space-y-1">
@@ -101,13 +101,13 @@ export default function Sidebar({ currentSessionId, onNewChat, onSelectChat }: S
                       key={s.sessionId}
                       onClick={() => onSelectChat(s.sessionId)}
                       className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition
-                        ${isActive ? "bg-primary-600 text-white" : "bg-surface hover:bg-neutral-100 text-neutral-900"}
+                        ${isActive ? "bg-primary text-primary-foreground" : "bg-surface hover:bg-surface-elevated text-foreground"}
                       `}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <MessageSquare
                           size={16}
-                          className={isActive ? "text-white flex-shrink-0" : "text-neutral-600 flex-shrink-0"}
+                          className={isActive ? "text-primary-foreground flex-shrink-0" : "text-muted-foreground flex-shrink-0"}
                         />
                         <div className="min-w-0">
                           <p className="text-sm truncate leading-tight">
@@ -115,7 +115,7 @@ export default function Sidebar({ currentSessionId, onNewChat, onSelectChat }: S
                           </p>
                           <p
                             className={`text-[11px] leading-tight ${
-                              isActive ? "text-white/70" : "text-neutral-500"
+                              isActive ? "text-primary-foreground/70" : "text-muted-foreground"
                             }`}
                           >
                             {formatFriendlyDate(s.updatedAt || s.createdAt)}
@@ -130,7 +130,7 @@ export default function Sidebar({ currentSessionId, onNewChat, onSelectChat }: S
                         }}
                         aria-label="Delete conversation"
                         className={`flex-shrink-0 p-1 rounded transition-opacity opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 ${
-                          isActive ? "text-white hover:text-red-200" : "text-neutral-500 hover:text-red-500"
+                          isActive ? "text-primary-foreground hover:text-danger" : "text-muted-foreground hover:text-danger"
                         }`}
                       >
                         <Trash2 size={14} />

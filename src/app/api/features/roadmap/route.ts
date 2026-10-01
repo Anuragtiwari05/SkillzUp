@@ -3,6 +3,9 @@ import dbConnect from "@/utils/db";
 import { getUserId } from "@/lib/auth";
 import { generateAndSaveRoadmap } from "@/lib/roadmapGenerator";
 
+// Allow slower Gemini calls on Vercel (default is 10s on Hobby).
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     await dbConnect();

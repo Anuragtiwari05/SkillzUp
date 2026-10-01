@@ -1,34 +1,35 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-type ConnectionObject = {
-  isConnected?: number;
+// Cache the connection on `globalThis` so serverless invocations (Vercel) and dev hot-reloads
+// reuse one connection instead of opening a new one per request.
+const globalWithMongoose = globalThis as typeof globalThis & {
+  _mongooseConn?: { promise: Promise<typeof mongoose> | null };
 };
-
-const connection: ConnectionObject = {};
+const cached = (globalWithMongoose._mongooseConn ??= { promise: null });
 
 async function dbConnect(): Promise<void> {
-  // If already connected, return existing connection meesage 
-  if (connection.isConnected) {
-    console.log('Already connected to database');
-    return;
+  const uri = process.env.MONGODB_URI;
+  if (!uri) throw new Error("MONGODB_URI is not set");
+
+  if (mongoose.connection.readyState === 1) return;
+
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(uri, { bufferCommands: false, serverSelectionTimeoutMS: 10000 })
+      .then(async (m) => {
+        // One-time index sync so the old ChatSession TTL index (auto-delete after
+        // 7 days) is dropped now that conversations should persist.
+        const ChatSession = (await import("@/models/chatsession")).default;
+        await ChatSession.syncIndexes();
+        return m;
+      })
+      .catch((err) => {
+        cached.promise = null; // allow a retry on the next request
+        throw err;
+      });
   }
 
-  try {
-    // Connect to mongo db atlas
-    const db = await mongoose.connect(process.env.MONGODB_URI || '');
-
-    connection.isConnected = db.connections[0].readyState;
-    console.log('MongoDB connected successfully');
-
-    // One-time index sync so the old ChatSession TTL index (auto-delete after
-    // 7 days) is dropped now that conversations should persist. This only
-    // changes indexes, not documents — no existing data is touched.
-    const ChatSession = (await import('@/models/chatsession')).default;
-    await ChatSession.syncIndexes();
-  } catch (error) {
-    console.error('Database connection failed:', error);
-    process.exit(1);
-  }
+  await cached.promise;
 }
 
 export default dbConnect;

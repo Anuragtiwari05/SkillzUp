@@ -18,6 +18,8 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import Loader from "@/component/ui/Loader";
 import BackButton from "@/component/ui/BackButton";
+import ThemeToggle from "@/component/theme/ThemeToggle";
+import SkillzUpWord from "@/component/motion/SkillzUpWord";
 
 export type ActiveSection = "dashboard" | "bookmarks" | "chat-history" | "profile" | "settings";
 
@@ -40,12 +42,12 @@ function SidebarContent({ active, onNavigate }: { active: ActiveSection; onNavig
   };
 
   return (
-    <div className="flex flex-col h-full bg-ink text-white">
-      <Link href="/" className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
-        <div className="bg-primary-500 p-1.5 rounded-lg">
-          <BookOpen className="w-5 h-5 text-ink" />
+    <div className="flex flex-col h-full bg-surface text-foreground border-r border-border">
+      <Link href="/" className="flex items-center gap-2 px-5 py-5 border-b border-border">
+        <div className="bg-primary text-primary-foreground p-1.5 rounded-lg">
+          <BookOpen className="w-5 h-5" />
         </div>
-        <span className="text-lg font-heading font-bold">SkillzUp</span>
+        <span className="text-lg font-heading font-extrabold"><SkillzUpWord variant="tilt" /></span>
       </Link>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
@@ -58,8 +60,8 @@ function SidebarContent({ active, onNavigate }: { active: ActiveSection; onNavig
               onClick={onNavigate}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                 isActive
-                  ? "bg-primary-500 text-ink"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
               }`}
             >
               <item.icon className="w-4 h-4" />
@@ -69,10 +71,10 @@ function SidebarContent({ active, onNavigate }: { active: ActiveSection; onNavig
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-white/10">
+      <div className="px-3 py-4 border-t border-border">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-300 hover:bg-white/10 hover:text-white w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-surface-elevated hover:text-foreground w-full transition-colors"
         >
           <LogOut className="w-4 h-4" />
           Logout
@@ -126,7 +128,7 @@ export default function AppShell({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              className="fixed inset-0 bg-scrim z-40 md:hidden"
             />
             <motion.div
               initial={{ x: "-100%" }}
@@ -143,21 +145,25 @@ export default function AppShell({
 
       <div className="flex-1 min-w-0">
         {/* Mobile top bar */}
-        <header className="md:hidden flex items-center gap-3 px-4 py-4 bg-ink text-white sticky top-0 z-30">
+        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-surface text-foreground border-b border-border sticky top-0 z-30">
           <button onClick={() => setDrawerOpen(true)} aria-label="Open menu">
             <Menu className="w-6 h-6" />
           </button>
-          <button onClick={() => router.back()} aria-label="Go back" className="hover:text-primary-400 transition-colors">
+          <button onClick={() => router.back()} aria-label="Go back" className="hover:text-link transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <span className="font-heading font-bold truncate">{title}</span>
+          <span className="font-heading font-bold truncate flex-1">{title}</span>
+          <ThemeToggle />
         </header>
 
         <main className="p-4 sm:p-6 lg:p-10 max-w-6xl mx-auto">
-          <BackButton className="hidden md:inline-flex mb-4" />
-          <h1 className="hidden md:block text-2xl sm:text-3xl font-heading font-extrabold text-neutral-900 mb-6">
-            {title}
-          </h1>
+          <div className="hidden md:flex items-center justify-between mb-6">
+            <div>
+              <BackButton className="mb-3" />
+              <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground">{title}</h1>
+            </div>
+            <ThemeToggle />
+          </div>
           {children}
         </main>
       </div>

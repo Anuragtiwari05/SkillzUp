@@ -32,15 +32,15 @@ export default function ChatWindow({ sessionId }: ChatWindowProps) {
   }, [sessionId]);
 
   return (
-    <div className="flex flex-col h-full bg-white/90 backdrop-blur-xl rounded-3xl p-4 border border-blue-200">
+    <div className="flex flex-col h-full bg-surface/90 backdrop-blur-xl rounded-3xl p-4 border border-primary/40">
       <div className="flex-1 overflow-y-auto space-y-3">
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`p-3 rounded-xl max-w-[75%] ${
               msg.role === "user"
-                ? "ml-auto bg-blue-600 text-white"
-                : "mr-auto bg-blue-50 text-gray-800 border"
+                ? "ml-auto bg-primary text-primary-foreground"
+                : "mr-auto bg-primary/15 text-foreground border"
             }`}
           >
             <div className="prose prose-sm max-w-none">

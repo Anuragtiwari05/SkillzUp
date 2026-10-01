@@ -1,79 +1,68 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, type ReactNode } from "react";
+import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
 
 type Preference = "light" | "dark" | "system";
+const STORAGE_KEY = "themePreference";
 
-interface ThemeContextValue {
-  preference: Preference;
-  resolvedTheme: "light" | "dark";
-  setPreference: (pref: Preference) => void;
-}
+/** Pull a logged-in user's saved preference when nothing is stored on this device yet. */
+function AccountThemeSync() {
+  const { setTheme } = useNextTheme();
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(STORAGE_KEY)) return;
+    } catch {
+      return;
+    }
+    fetch("/api/user/me", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const pref = data?.user?.themePreference;
+        if (data?.success && ["light", "dark", "system"].includes(pref)) setTheme(pref);
+      })
+      .catch(() => {});
+  }, [setTheme]);
 
-function resolve(pref: Preference): "light" | "dark" {
-  if (pref === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-  return pref;
-}
-
-function apply(theme: "light" | "dark") {
-  document.documentElement.setAttribute("data-theme", theme);
+  return null;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [preference, setPreferenceState] = useState<Preference>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    const stored = (localStorage.getItem("themePreference") as Preference | null) ?? "system";
-    setPreferenceState(stored);
-    const resolved = resolve(stored);
-    setResolvedTheme(resolved);
-    apply(resolved);
-
-    // Best-effort: pull a logged-in user's saved preference if nothing local yet
-    if (!localStorage.getItem("themePreference")) {
-      fetch("/api/user/me", { credentials: "include" })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.user?.themePreference) {
-            setPreferenceState(data.user.themePreference);
-            const r = resolve(data.user.themePreference);
-            setResolvedTheme(r);
-            apply(r);
-          }
-        })
-        .catch(() => {});
-    }
-  }, []);
-
-  const setPreference = useCallback((pref: Preference) => {
-    setPreferenceState(pref);
-    localStorage.setItem("themePreference", pref);
-    const resolved = resolve(pref);
-    setResolvedTheme(resolved);
-    apply(resolved);
-
-    fetch("/api/user/theme", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ themePreference: pref }),
-    }).catch(() => {});
-  }, []);
-
   return (
-    <ThemeContext.Provider value={{ preference, resolvedTheme, setPreference }}>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+      storageKey={STORAGE_KEY}
+    >
+      <AccountThemeSync />
       {children}
-    </ThemeContext.Provider>
+    </NextThemesProvider>
   );
 }
 
+/** Same shape the Settings page already uses, now backed by next-themes. */
 export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-  return ctx;
+  const { theme, resolvedTheme, setTheme } = useNextTheme();
+
+  const setPreference = useCallback(
+    (pref: Preference) => {
+      setTheme(pref);
+      fetch("/api/user/theme", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ themePreference: pref }),
+      }).catch(() => {});
+    },
+    [setTheme]
+  );
+
+  return {
+    preference: (theme as Preference | undefined) ?? "system",
+    resolvedTheme: (resolvedTheme as "light" | "dark" | undefined) ?? "light",
+    setPreference,
+  };
 }

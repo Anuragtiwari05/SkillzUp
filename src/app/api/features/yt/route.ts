@@ -37,6 +37,29 @@ export async function GET(req: Request) {
     const data = await response.json();
     console.log("✅ YouTube API returned", data.items?.length, "videos");
 
+    // Best-effort: attach each video's duration (ISO 8601). Never fails the request.
+    try {
+      const ids = (data.items || [])
+        .map((v: { id?: { videoId?: string } }) => v.id?.videoId)
+        .filter(Boolean)
+        .join(",");
+      if (ids) {
+        const detailsRes = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${YT_API_KEY}`
+        );
+        if (detailsRes.ok) {
+          const details = await detailsRes.json();
+          const durations = new Map<string, string>(
+            (details.items || []).map((d: { id: string; contentDetails?: { duration?: string } }) => [
+              d.id,
+              d.contentDetails?.duration ?? "",
+            ])
+          );
+          for (const v of data.items) v.duration = durations.get(v.id?.videoId) || undefined;
+        }
+      }
+    } catch {}
+
     return NextResponse.json({ items: data.items });
   } catch (err: unknown) {
   let message = "Unknown error";

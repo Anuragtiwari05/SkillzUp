@@ -1,8 +1,8 @@
-// src/components/Footer.tsx
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Github, Linkedin, Twitter } from "lucide-react";
+import { BookOpen } from "lucide-react";
+import SkillzUpWord from "@/component/motion/SkillzUpWord";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -31,7 +31,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     ],
   },
   {
-    title: "Behind the Scenes",
+    title: "Your Space",
     links: [
       { label: "Dashboard", href: "/dashboard" },
       { label: "Bookmarks", href: "/bookmarks" },
@@ -42,39 +42,39 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
 
 export default function Footer() {
   return (
-    <footer className="bg-ink text-gray-300 mt-20">
+    <footer className="bg-surface border-t border-border mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
           <div className="col-span-2 space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="bg-primary-500 p-2 rounded-full">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-heading font-bold text-white">SkillzUp</span>
+            <div className="flex items-center gap-2">
+              <span className="bg-primary text-primary-foreground p-2 rounded-full">
+                <BookOpen className="w-5 h-5" />
+              </span>
+              <span className="text-xl font-heading font-extrabold text-foreground">
+                <SkillzUpWord variant="tilt" />
+              </span>
             </div>
-            <p className="text-gray-400 leading-relaxed text-sm max-w-xs">
+            <p className="text-muted-foreground leading-relaxed text-sm max-w-xs">
               Structured roadmaps, curated resources, and an AI assistant to accelerate your growth.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <a href="#" aria-label="GitHub" className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-                <Github className="w-4 h-4" />
-              </a>
-              <a href="#" aria-label="LinkedIn" className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-                <Linkedin className="w-4 h-4" />
-              </a>
-              <a href="#" aria-label="Twitter" className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-                <Twitter className="w-4 h-4" />
-              </a>
-            </div>
+            <Link
+              href="/contact"
+              className="inline-flex text-sm font-semibold text-link hover:underline underline-offset-4"
+            >
+              Say hello &rarr;
+            </Link>
           </div>
 
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="text-sm font-heading font-bold text-white mb-4">{col.title}</h3>
+              <h3 className="text-sm font-heading font-bold text-foreground mb-4">{col.title}</h3>
               <ul className="space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-sm text-gray-400 hover:text-primary-400 transition-colors">
+                    <Link
+                      href={link.href}
+                      className="text-sm text-muted-foreground hover:text-link transition-colors"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -84,9 +84,9 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-8 text-center text-sm">
-          <p className="text-gray-500">
-            &copy; 2025 SkillzUp. Built with passion for learners worldwide.
+        <div className="border-t border-border mt-12 pt-8 text-center text-sm">
+          <p className="text-muted-foreground" suppressHydrationWarning>
+            &copy; {new Date().getFullYear()} SkillzUp. Built with passion for learners worldwide.
           </p>
         </div>
       </div>

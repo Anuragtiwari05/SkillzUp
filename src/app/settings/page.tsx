@@ -19,8 +19,8 @@ export default function SettingsPage() {
     <AppShell active="settings" title="Settings">
       <Reveal>
         <Card hover={false} className="p-6 sm:p-8">
-          <h2 className="font-heading font-bold text-lg text-neutral-900 mb-1">Appearance</h2>
-          <p className="text-neutral-600 text-sm mb-6">
+          <h2 className="font-heading font-bold text-lg text-foreground mb-1">Appearance</h2>
+          <p className="text-muted-foreground text-sm mb-6">
             Choose how SkillzUp looks on this device. Your choice is saved and synced to your account.
           </p>
 
@@ -33,8 +33,8 @@ export default function SettingsPage() {
                   onClick={() => setPreference(opt.value)}
                   className={`flex flex-col items-center gap-2 px-4 py-4 rounded-xl border-2 font-semibold text-sm transition-colors ${
                     selected
-                      ? "border-primary-600 bg-primary-50 text-primary-700"
-                      : "border-surface-border bg-surface text-neutral-700 hover:border-primary-300"
+                      ? "border-primary bg-primary/15 text-link"
+                      : "border-border bg-surface text-muted-foreground hover:border-primary"
                   }`}
                 >
                   <opt.icon className="w-5 h-5" />
